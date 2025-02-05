@@ -61,9 +61,11 @@ struct SumDistance2 {
          double d = distance2(x[i],y[i],z[i],par);
          sum += d;
       }
+      /*
       if (first) {
          std::cout << "Total Initial distance square = " << sum << std::endl;
       }
+      */
       first = false;
       return sum;
    }
@@ -114,7 +116,7 @@ const double *line3Dfit(std::vector<float> X, std::vector<float> Y, std::vector<
 
    const ROOT::Fit::FitResult & result = fitter->Result();
  
-   std::cout << "Total final distance square = " << result.MinFcnValue() << std::endl;
+   //std::cout << "Total final distance square = " << result.MinFcnValue() << std::endl;
    //result.Print(std::cout);
 
    const double *parFit = result.GetParams(); // p

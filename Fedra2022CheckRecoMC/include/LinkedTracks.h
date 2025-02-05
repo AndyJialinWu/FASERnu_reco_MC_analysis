@@ -20,6 +20,7 @@ const double IntLumi_run3 = 250.00;           // fb^
 const double wgt_NC_200025 = 50173.00 / 10e3; // event/fb^{-1}
 const double wgt_NC_200026 = 66355.00 / 10e3;
 const double wgt_NC_200035 = 13555.00 / 10e3;
+const double Run3ExpNC[3] = {IntLumi_run3 * wgt_NC_200025, IntLumi_run3 * wgt_NC_200026, IntLumi_run3 * wgt_NC_200035};
 
 const float t_plate = 1.1e3;                  // tungsten plate thickness in um
 const float t_film = 0.34e3;                  // film thickness in um
@@ -46,10 +47,12 @@ class LinkedTracks{
         std::vector<int> PDG;           // MC truth track pdg code
         std::vector<double> theta;      // reconstructed track polar angle
         std::vector<double> phi;        // reconstructed track azimuthal angle
-        std::vector<float> pmag;        // reconstructed track momentum by MCS
+        std::vector<float> pmag_coord;  // reconstructed track momentum by MCS the coordinate method
+        std::vector<float> pmag_ang;    // reconstructed track momentum by MCS the angular method
         std::vector<float> ptrue;       // MC truth track momentum
         std::vector<int> NSeg;          // reconstructed track the number of segments
-        std::vector<double> IP;         // reconstructed impact parameter
+        std::vector<double> IP;         // reconstructed impact parameter um
+        std::vector<float> dz;          // reconstructed (z_FirstSeg - z_vertex) um
                 
         // segment level
         std::vector<std::vector<float>> X; // reconstructed segment positions
@@ -69,12 +72,13 @@ class LinkedTracks{
         void PrintTrueVertex();
 
         // set eventID, trackID, PDG, pmag, ptrue, NSeg, X, Y, Z, TX, TY
-        void SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, std::vector<int> FedraPDG, std::vector<float> FedraPmag, std::vector<float> FedraPtrue, std::vector<int> FedraNSeg,
+        void SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, std::vector<int> FedraPDG, std::vector<float> FedraPmagCoord, std::vector<float> FedraPmagAng, 
+                           std::vector<float> FedraPtrue, std::vector<int> FedraNSeg,
                            std::vector<std::vector<float>> FedraX, std::vector<std::vector<float>> FedraY, std::vector<std::vector<float>> FedraZ,
                            std::vector<std::vector<float>> FedraTX, std::vector<std::vector<float>> FedraTY); 
 
         void GetRecoMCInfo();    
-        void GetRecoAngleIP();  // get theta, phi, IP
+        void GetRecoAngleIPdz();  // get theta, phi, IP, dz
 
         bool IsPrimTrack(int TrackIt);
 
@@ -116,10 +120,12 @@ void LinkedTracks::Init(TTree *tracks){
     PDG.clear();
     theta.clear();
     phi.clear();
-    pmag.clear();
+    pmag_coord.clear();
+    pmag_ang.clear();
     NSeg.clear();
     ptrue.clear();
     IP.clear();
+    dz.clear();
     
     X.clear();
     Y.clear();
@@ -147,15 +153,16 @@ void LinkedTracks::SetTrueVertex(float vx_global_MC, float vy_global_MC, float v
     vy_hit_true = (vy_global_MC + 21.) * 1000.;
     vz_hit_true = (vz_global_MC + 2986.27) * 1000.;
 
-    std::cout<<"(vx, vy, vz) = "<<"("<<vx_hit_true<<", "<<vy_hit_true<<", "<<vz_hit_true<<")"<<" um"<<std::endl;
+    //std::cout<<"(vx, vy, vz) = "<<"("<<vx_hit_true<<", "<<vy_hit_true<<", "<<vz_hit_true<<")"<<" um"<<std::endl;
 
-    PrintTrueVertex();
+    //PrintTrueVertex();
 
 };
 
 
 
-void LinkedTracks::SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, std::vector<int> FedraPDG, std::vector<float> FedraPmag, std::vector<float> FedraPtrue, std::vector<int> FedraNSeg,
+void LinkedTracks::SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, std::vector<int> FedraPDG, std::vector<float> FedraPmagCoord, std::vector<float> FedraPmagAng, 
+                                 std::vector<float> FedraPtrue, std::vector<int> FedraNSeg,
                                  std::vector<std::vector<float>> FedraX, std::vector<std::vector<float>> FedraY, std::vector<std::vector<float>> FedraZ,
                                  std::vector<std::vector<float>> FedraTX, std::vector<std::vector<float>> FedraTY){
 
@@ -164,7 +171,8 @@ void LinkedTracks::SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, st
     // track level
     trackID = FedraTrkID;
     PDG = FedraPDG;
-    pmag= FedraPmag;
+    pmag_coord = FedraPmagCoord;
+    pmag_ang = FedraPmagAng;
     ptrue= FedraPtrue;
     NSeg = FedraNSeg;
 
@@ -186,7 +194,7 @@ void LinkedTracks::GetRecoMCInfo(){
     tree->SetBranchAddress("t.", &trk);
     tree->SetBranchAddress("s",  &seg);
 
-    PrintTrueVertex();
+    //PrintTrueVertex();
 
     int NTracks = tree->GetEntries();
     tree->GetEntry(0);
@@ -197,14 +205,14 @@ void LinkedTracks::GetRecoMCInfo(){
     for(int trkIt=0; trkIt<NTracks; trkIt++){
 
         tree->GetEntry(trkIt);
-
+        
         std::cout<<"TrackIt = "<<trkIt<<"; ";
         std::cout<<"Track ID = "<<trk->Track()<<"; ";
         std::cout<<"PDG = "<<trk->MCTrack()<<"; ";
         std::cout<<"P = "<<trk->P()<<" GeV/c; ";
         std::cout<<"# seg. = "<<nseg<<"; ";
         std::cout<<"Z0 = "<<trk->Z()<<" um;"<<std::endl;
-
+        
         if(nseg < 3) continue; // # segments cut
 
         EdbTrackP *trkP = new EdbTrackP();
@@ -225,15 +233,29 @@ void LinkedTracks::GetRecoMCInfo(){
         }
 
         trkP->SetNpl();
+
         EdbMomentumEstimator *MomEst = new EdbMomentumEstimator();
         MomEst->SetParPMS_Mag();
 
-        float eP = MomEst->PMScoordinate(*trkP);
-        std::cout<<"eP (coord. method) = "<<eP<<" GeV/c"<<std::endl;
+        std::cout<<__LINE__<<std::endl;
+        float eP_coord = MomEst->PMScoordinate(*trkP);
+        //MomEst->~EdbMomentumEstimator();
+        delete MomEst;
+        std::cout<<"eP (coord. method) = "<<eP_coord<<" GeV/c"<<std::endl;
+
+        std::cout<<__LINE__<<std::endl;
+        MomEst = new EdbMomentumEstimator();
+        MomEst->SetParPMS_Mag();
+
+        float eP_ang = MomEst->PMSang(*trkP);
+        //float eP_ang = -99.;
+        //MomEst->~EdbMomentumEstimator();
+        std::cout<<"eP (angular method) = "<<eP_ang<<" GeV/c"<<std::endl;
 
         trackID.push_back(trk->Track());
         PDG.push_back(trk->MCTrack());
-        pmag.push_back(eP);
+        pmag_coord.push_back(eP_coord);
+        pmag_ang.push_back(eP_ang);
         ptrue.push_back(trk->P());
         NSeg.push_back(nseg);
         X.push_back(SegPara[0]);
@@ -242,15 +264,21 @@ void LinkedTracks::GetRecoMCInfo(){
         TX.push_back(SegPara[3]);
         TY.push_back(SegPara[4]);
 
+        delete trkP;
+        delete MomEst;
+
     }
 
-}
+    delete trk;
+    delete seg;
 
-void LinkedTracks::GetRecoAngleIP(){
+};
 
-    int NRecoTrks = X.size();
+void LinkedTracks::GetRecoAngleIPdz(){
 
-    for(int trkIt=0; trkIt<NRecoTrks; trkIt++){
+    size_t NRecoTrks = X.size();
+
+    for(size_t trkIt=0; trkIt<NRecoTrks; trkIt++){
         
         // track 3D linear fitting
         const double *para_line3Dfit = line3Dfit(X[trkIt], Y[trkIt], Z[trkIt]);
@@ -259,6 +287,7 @@ void LinkedTracks::GetRecoAngleIP(){
         double ImpactParameter = GetImpactParameter(TrkDirVect, para_line3Dfit[0], para_line3Dfit[2], vx_hit_true, vy_hit_true, vz_hit_true);
         
         IP.push_back(ImpactParameter);
+        dz.push_back(Z.at(trkIt).at(0) - vz_hit_true);
         theta.push_back(TrkDirVect.Theta());
         phi.push_back(TrkDirVect.Phi());
         
@@ -269,7 +298,7 @@ void LinkedTracks::GetRecoAngleIP(){
 
 bool LinkedTracks::IsPrimTrack(int TrackIt){
     
-    float dz = Z[TrackIt].at(0) - vz_hit_true;
+    float dz = Z.at(TrackIt).at(0) - vz_hit_true;
     bool StartWithin3PlatesDownStream = dz < (3. * (t_plate + t_film)) && dz > 0;
 
     float dr = std::sqrt(std::pow(X[TrackIt].at(0)-vx_hit_true,2) + std::pow(Y[TrackIt].at(0)-vy_hit_true,2));
@@ -292,10 +321,12 @@ void LinkedTracks::SortBasedOnTrackID(){
     std::vector<int> sorted_PDG(NRecoTrks);           // MC truth track pdg code
     std::vector<double> sorted_theta(NRecoTrks);      // reconstructed track polar angle
     std::vector<double> sorted_phi(NRecoTrks);        // reconstructed track azimuthal angle
-    std::vector<float> sorted_pmag(NRecoTrks);        // reconstructed track momentum by MCS
+    std::vector<float> sorted_pmagCoord(NRecoTrks);   // reconstructed track momentum by MCS the coordinate method
+    std::vector<float> sorted_pmagAng(NRecoTrks);     // reconstructed track momentum by MCS the angular method
     std::vector<float> sorted_ptrue(NRecoTrks);       // MC truth track momentum
     std::vector<int> sorted_NSeg(NRecoTrks);          // reconstructed track the number of segments
     std::vector<double> sorted_IP(NRecoTrks);         // reconstructed impact parameter
+    std::vector<float> sorted_dz(NRecoTrks);          // reconstructed (z_FirstSeg - z_vertex) um
             
     // segment level
     std::vector<std::vector<float>> sorted_X(NRecoTrks); // reconstructed segment positions
@@ -324,10 +355,12 @@ void LinkedTracks::SortBasedOnTrackID(){
         sorted_PDG[i] = PDG[indices[i]];          
         sorted_theta[i] = theta[indices[i]];
         sorted_phi[i] = phi[indices[i]];        
-        sorted_pmag[i] = pmag[indices[i]];        
+        sorted_pmagCoord[i] = pmag_coord[indices[i]];        
+        sorted_pmagAng[i] = pmag_ang[indices[i]];
         sorted_ptrue[i] = ptrue[indices[i]];      
         sorted_NSeg[i] = NSeg[indices[i]];       
-        sorted_IP[i] = IP[indices[i]];    
+        sorted_IP[i] = IP[indices[i]];
+        sorted_dz[i] = dz[indices[i]];    
                 
         // segment level
         sorted_X[i] = X[indices[i]]; 
@@ -335,24 +368,29 @@ void LinkedTracks::SortBasedOnTrackID(){
         sorted_Z[i] = Z[indices[i]]; 
         sorted_TX[i] = TX[indices[i]];
         sorted_TY[i] = TY[indices[i]];
-
+        /*
         std::cout<<"sorted track ID = "<<sorted_trackID[i]<<"; "
         <<"PDG = "<<sorted_PDG[i]<<"; "
         <<"# seg. = "<<sorted_NSeg[i]<<"; "
-        <<"pmag = "<<sorted_pmag[i]<<" GeV/c; "
+        <<"pmag_coord = "<<sorted_pmagCoord[i]<<" GeV/c; "
+        <<"pmag_ang = "<<sorted_pmagAng[i]<<" GeV/c; "
         <<"ptrue = "<<sorted_ptrue[i]<<" GeV/c; "
-        <<"IP = "<<sorted_IP[i]<<" um;"
+        <<"IP = "<<sorted_IP[i]<<" um; "
+        <<"dz = "<<sorted_dz[i]/1e3<<" mm"
         <<std::endl;
+        */        
     }
 
     trackID = sorted_trackID;
     PDG = sorted_PDG;
     theta = sorted_theta;
     phi = sorted_phi;
-    pmag = sorted_pmag;
+    pmag_coord = sorted_pmagCoord;
+    pmag_ang = sorted_pmagAng;
     ptrue = sorted_ptrue;
     NSeg = sorted_NSeg;
     IP = sorted_IP;
+    dz = sorted_dz;
 
     X = sorted_X;
     Y = sorted_Y;

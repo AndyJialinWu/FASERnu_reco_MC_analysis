@@ -8,13 +8,16 @@
 #ifndef NuMCTruth_kinematics_h
 #define NuMCTruth_kinematics_h
 
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-
 // Header file for the classes stored in the TTree if any.
 #include <vector>
 using namespace std;
+
+#include "TROOT.h"
+#include "TChain.h"
+#include "TFile.h"
+#include "TLorentzVector.h"
+
+
 
 class NuMCTruth_kinematics {
 public :
@@ -101,6 +104,15 @@ public :
    TBranch        *b_m_hadrons_e;   //!
    TBranch        *b_m_hadrons_ch;   //!
 
+   // reconstructable MC truth (i.e. charged primary particles)
+   std::vector<int> trackID;       // MC truth track ID
+   std::vector<int> PDG;           // MC truth track pdg code
+   std::vector<TLorentzVector> p4; // MC truth track 4-momentum
+   std::vector<double> theta;      // MC truth track polar angle
+   std::vector<double> phi;        // MC truth track azimuthal angle
+   std::vector<double> charge;     // MC truth track electric charge (in the unit of |e|)
+
+
    NuMCTruth_kinematics(TTree *tree=0);
    virtual ~NuMCTruth_kinematics();
    virtual Int_t    Cut(Long64_t entry);
@@ -110,6 +122,9 @@ public :
    virtual void     Loop();
    virtual bool     Notify();
    virtual void     Show(Long64_t entry = -1);
+
+   void GetRecoMCtruth();           // Get reconstructable MC truth info. 
+
 };
 
 
@@ -184,12 +199,12 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    m_hadrons_pz = 0;
    m_hadrons_e = 0;
    m_hadrons_ch = 0;
+
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
    fCurrent = -1;
    fChain->SetMakeClass(1);
-
    fChain->SetBranchAddress("m_runnumber", &m_runnumber, &b_m_runnumber);
    fChain->SetBranchAddress("m_event_id_MC", &m_event_id_MC, &b_m_event_id_MC);
    fChain->SetBranchAddress("m_NC0_CC1", &m_NC0_CC1, &b_m_NC0_CC1);
@@ -228,6 +243,15 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    fChain->SetBranchAddress("m_hadrons_e", &m_hadrons_e, &b_m_hadrons_e);
    fChain->SetBranchAddress("m_hadrons_ch", &m_hadrons_ch, &b_m_hadrons_ch);
    Notify();
+
+   // set the reconstructable MC truth
+   trackID.clear();
+   PDG.clear();
+   p4.clear();
+   theta.clear();
+   phi.clear();
+   charge.clear();
+
 };
 
 bool NuMCTruth_kinematics::Notify()
@@ -293,5 +317,61 @@ void NuMCTruth_kinematics::Loop()
       // if (Cut(ientry) < 0) continue;
    }
 };
+
+
+void NuMCTruth_kinematics::GetRecoMCtruth(){
+
+   fChain->GetEntry(0);
+
+   // lepton loop
+   for(size_t lepIt=0; lepIt<m_leptons_PDG->size(); lepIt++){
+
+      int pdg = m_leptons_PDG->at(lepIt);
+      if(std::abs(pdg)%2 == 1){
+         // charged leptons: electron muon tau
+         
+         trackID.push_back(m_leptons_track_id->at(lepIt));
+         PDG.push_back(pdg);
+         
+         TLorentzVector p4lep(m_leptons_px->at(lepIt), m_leptons_py->at(lepIt), m_leptons_pz->at(lepIt), m_leptons_e->at(lepIt));
+
+         p4.push_back(p4lep);
+         theta.push_back(p4lep.Vect().Theta());
+         phi.push_back(p4lep.Vect().Phi());
+         if(pdg > 0){
+            // e- mu- tau-
+            charge.push_back(-1);
+         }
+         else{
+            // e+ mu+ tau+
+            charge.push_back(+1);
+         }
+
+      }
+
+   }
+
+   // hadron Loop
+   for(size_t hadIt=0; hadIt<m_hadrons_PDG->size(); hadIt++){
+
+      // skip the neutral hadrons
+      if(m_hadrons_ch->at(hadIt) == 0) continue;
+
+      trackID.push_back(m_hadrons_track_id->at(hadIt));
+      PDG.push_back(m_hadrons_PDG->at(hadIt));
+      
+      TLorentzVector p4had(m_hadrons_px->at(hadIt), m_hadrons_py->at(hadIt), m_hadrons_pz->at(hadIt), m_hadrons_e->at(hadIt));
+
+      p4.push_back(p4had);
+      theta.push_back(p4had.Vect().Theta());
+      phi.push_back(p4had.Vect().Phi());
+      charge.push_back(m_hadrons_ch->at(hadIt));
+
+   }
+
+};
+
+
+
 
 #endif // #ifndef NuMCTruth_kinematics_h
