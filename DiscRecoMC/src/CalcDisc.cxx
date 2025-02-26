@@ -14,7 +14,6 @@
 #include "NuMCTruth_kinematics.h"
 #include "m_NuHit_tree.h"
 #include "m_NuMCTruth_tree.h"
-//#include "Discriminators.h"
 #include "CalcDisc.h"
 
 
@@ -29,7 +28,7 @@ int main(){
     }
     //PrintEventList(EvtNClist[0]);
 
-    TFile *f_disc = new TFile("discriminators.root", "RECREATE");
+    TFile *f_disc = new TFile("PhysicsNTUP.root", "RECREATE");
     TTree *t_disc = new TTree("reco", "reco");
     Branch(t_disc);
 
@@ -46,7 +45,7 @@ int main(){
             //std::cout<<__LINE__<<std::endl;
 
             EventInit();
-            Discriminators *disc = new Discriminators(f_disc, t_disc);
+            Discriminators *disc = new Discriminators();
 
             //std::cout<<__LINE__<<std::endl;
 
@@ -108,6 +107,9 @@ int main(){
                         disc->pmag_reco.push_back(RecoMC->pmag_haruhi.at(recoIt));
                         disc->phi_reco.push_back(RecoMC->phi.at(recoIt));
                         disc->theta_reco.push_back(RecoMC->theta.at(recoIt));
+
+                        disc->pmag_ang.push_back(RecoMC->pmag_ang.at(recoIt));
+                        disc->pmag_coord.push_back(RecoMC->pmag_coord.at(recoIt));
                         
                         TVector3 p3_true(NTUP_kinematics->m_px/1000., NTUP_kinematics->m_py/1000., NTUP_kinematics->m_pz/1000.); // MeV to GeV
                         disc->px_true.push_back(NTUP_kinematics->m_px/1000.); // MeV to GeV
@@ -120,6 +122,13 @@ int main(){
                         disc->TrackID.push_back(NTUP_kinematics->m_track_id);
                         disc->PDG.push_back(NTUP_kinematics->m_pdg_id);
 
+                        disc->nseg.push_back(RecoMC->NSeg.at(recoIt));
+                        disc->TrackLength.push_back(RecoMC->TrackLength.at(recoIt));
+                        disc->dz.push_back(RecoMC->dz.at(recoIt)); // um
+                        disc->IP.push_back(RecoMC->IP.at(recoIt)); // um
+                        disc->PID_start.push_back(RecoMC->PID.at(recoIt).at(0));
+                        disc->PID_end.push_back(RecoMC->PID.at(recoIt).back());
+
                     }
 
                 }
@@ -130,6 +139,7 @@ int main(){
 
             disc->mcID = MonteCarloID[mcIt];
             disc->EventID = jw_test->m_event_id_MC;
+            
 
             // calculate discriminators
             disc->CalcDisc();

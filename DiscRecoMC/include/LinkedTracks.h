@@ -56,14 +56,15 @@ class LinkedTracks{
         std::vector<int> NSeg;          // reconstructed track the number of segments
         std::vector<double> IP;         // reconstructed impact parameter um
         std::vector<float> dz;          // reconstructed (z_FirstSeg - z_vertex) um
+        std::vector<double> TrackLength;// reconstructed track length mm
                 
         // segment level
-        std::vector<std::vector<float>> X; // reconstructed segment positions
-        std::vector<std::vector<float>> Y; // reconstructed segment positions
-        std::vector<std::vector<float>> Z; // reconstructed segment positions 
-        std::vector<std::vector<float>> TX;// reconstructed segment tangent polar angles
-        std::vector<std::vector<float>> TY;// reconstructed segment tangent polar angles
-
+        std::vector<std::vector<float>> X;  // reconstructed segment positions
+        std::vector<std::vector<float>> Y;  // reconstructed segment positions
+        std::vector<std::vector<float>> Z;  // reconstructed segment positions 
+        std::vector<std::vector<float>> TX; // reconstructed segment tangent polar angles
+        std::vector<std::vector<float>> TY; // reconstructed segment tangent polar angles
+        std::vector<std::vector<int>>   PID;// reconstructed segment plate ID: from 0 to 100
 
 
 
@@ -82,8 +83,9 @@ class LinkedTracks{
 
         void GetRecoMCInfo(bool ToPrintTrkInfo);
         void PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoord, float epAng, float epHaruhi);
-
-        void GetRecoAngleIPdz();  // get theta, phi, IP, dz
+        
+        static double CalcTrackLength(std::vector<float> x, std::vector<float> y, std::vector<float> z);
+        void GetRecoAngleIPdz();  // get theta, phi, IP, dz, TrackLength
 
         bool IsPrimTrack(int TrackIt);
 
@@ -131,12 +133,14 @@ void LinkedTracks::Init(TTree *tracks){
     ptrue.clear();
     IP.clear();
     dz.clear();
+    TrackLength.clear();
     
     X.clear();
     Y.clear();
     Z.clear();
     TX.clear();
     TY.clear();
+    PID.clear();
 
 };
 
@@ -227,6 +231,7 @@ void LinkedTracks::GetRecoMCInfo(bool ToPrintTrkInfo){
 
         EdbTrackP *trkP = new EdbTrackP();
         std::vector<float> SegPara[5];
+        std::vector<int> SegPID;
 
         // segment loop
         for(int segIt=0; segIt<nseg; segIt++){
@@ -239,6 +244,7 @@ void LinkedTracks::GetRecoMCInfo(bool ToPrintTrkInfo){
             SegPara[2].push_back(s->Z());
             SegPara[3].push_back(s->TX());
             SegPara[4].push_back(s->TY());
+            SegPID.push_back(s->PID());
 
         }
 
@@ -280,16 +286,32 @@ void LinkedTracks::GetRecoMCInfo(bool ToPrintTrkInfo){
         Z.push_back(SegPara[2]);
         TX.push_back(SegPara[3]);
         TY.push_back(SegPara[4]);
+        PID.push_back(SegPID);
 
         if(ToPrintTrkInfo) PrintTrkInfo(trk, trkIt, nseg, eP_coord, eP_ang, eP_haruhi);
 
         delete trkP;
         
 
-    }
+    }// track loop
 
     delete trk;
     delete seg;
+
+};
+
+
+double LinkedTracks::CalcTrackLength(std::vector<float> x, std::vector<float> y, std::vector<float> z){
+
+    double TraLen = 0.00;
+
+    for(size_t segIt=0; segIt<x.size()-1; segIt++){
+
+        TraLen += std::sqrt( std::pow(x.at(segIt+1)-x.at(segIt), 2) + std::pow(y.at(segIt+1)-y.at(segIt), 2) + std::pow(z.at(segIt+1)-z.at(segIt), 2) );
+        
+    }
+
+    return TraLen/1e3; // track length in mm
 
 };
 
@@ -305,10 +327,13 @@ void LinkedTracks::GetRecoAngleIPdz(){
         TVector3 TrkDirVect(para_line3Dfit[1], para_line3Dfit[3], 1.00);
         double ImpactParameter = GetImpactParameter(TrkDirVect, para_line3Dfit[0], para_line3Dfit[2], vx_hit_true, vy_hit_true, vz_hit_true);
         
+        double TraLen = CalcTrackLength(X[trkIt], Y[trkIt], Z[trkIt]);
+        
         IP.push_back(ImpactParameter);
         dz.push_back(Z.at(trkIt).at(0) - vz_hit_true);
         theta.push_back(TrkDirVect.Theta());
         phi.push_back(TrkDirVect.Phi());
+        TrackLength.push_back(TraLen);
         
     }
 
@@ -324,7 +349,7 @@ bool LinkedTracks::IsPrimTrack(int TrackIt){
     bool TransConfine = dr < (dz * 0.5);
 
     bool tanThetaCut = std::tan(theta.at(TrackIt)) < 0.5;
-    bool IPcut = IP.at(TrackIt) < 20; // um
+    bool IPcut = IP.at(TrackIt) < 10; // um
 
     return StartWithin3PlatesDownStream && TransConfine && tanThetaCut && IPcut;
 
@@ -347,13 +372,15 @@ void LinkedTracks::SortBasedOnTrackID(){
     std::vector<int> sorted_NSeg(NRecoTrks);          // reconstructed track the number of segments
     std::vector<double> sorted_IP(NRecoTrks);         // reconstructed impact parameter
     std::vector<float> sorted_dz(NRecoTrks);          // reconstructed (z_FirstSeg - z_vertex) um
+    std::vector<double> sorted_TrackLength(NRecoTrks);// reconstructed track length mm
             
     // segment level
-    std::vector<std::vector<float>> sorted_X(NRecoTrks); // reconstructed segment positions
-    std::vector<std::vector<float>> sorted_Y(NRecoTrks); // reconstructed segment positions
-    std::vector<std::vector<float>> sorted_Z(NRecoTrks); // reconstructed segment positions 
-    std::vector<std::vector<float>> sorted_TX(NRecoTrks);// reconstructed segment tangent polar angles
-    std::vector<std::vector<float>> sorted_TY(NRecoTrks);// reconstructed segment tangent polar angles
+    std::vector<std::vector<float>> sorted_X(NRecoTrks);    // reconstructed segment positions
+    std::vector<std::vector<float>> sorted_Y(NRecoTrks);    // reconstructed segment positions
+    std::vector<std::vector<float>> sorted_Z(NRecoTrks);    // reconstructed segment positions 
+    std::vector<std::vector<float>> sorted_TX(NRecoTrks);   // reconstructed segment tangent polar angles
+    std::vector<std::vector<float>> sorted_TY(NRecoTrks);   // reconstructed segment tangent polar angles
+    std::vector<std::vector<int>>   sorted_PID(NRecoTrks);  // reconstructed segment plate ID: from 0 to 100
 
     // Create an index vector
     std::vector<size_t> indices(NRecoTrks);
@@ -381,6 +408,7 @@ void LinkedTracks::SortBasedOnTrackID(){
         sorted_NSeg[i] = NSeg[indices[i]];       
         sorted_IP[i] = IP[indices[i]];
         sorted_dz[i] = dz[indices[i]];    
+        sorted_TrackLength[i] = TrackLength[indices[i]];
                 
         // segment level
         sorted_X[i] = X[indices[i]]; 
@@ -388,6 +416,7 @@ void LinkedTracks::SortBasedOnTrackID(){
         sorted_Z[i] = Z[indices[i]]; 
         sorted_TX[i] = TX[indices[i]];
         sorted_TY[i] = TY[indices[i]];
+        sorted_PID[i] = PID[indices[i]];
         /*
         std::cout<<"sorted track ID = "<<sorted_trackID[i]<<"; "
         <<"PDG = "<<sorted_PDG[i]<<"; "
@@ -397,7 +426,8 @@ void LinkedTracks::SortBasedOnTrackID(){
         <<"pmag_haruhi = "<<sorted_pmagHaruhi[i]<<" GeV/c; "
         <<"ptrue = "<<sorted_ptrue[i]<<" GeV/c; "
         <<"IP = "<<sorted_IP[i]<<" um; "
-        <<"dz = "<<sorted_dz[i]/1e3<<" mm"
+        <<"dz = "<<sorted_dz[i]/1e3<<" mm; "
+        <<"TraLen = "<<sorted_TrackLength[i]<<" mm; "
         <<std::endl;
         */        
     }
@@ -413,12 +443,14 @@ void LinkedTracks::SortBasedOnTrackID(){
     NSeg = sorted_NSeg;
     IP = sorted_IP;
     dz = sorted_dz;
+    TrackLength = sorted_TrackLength;
 
     X = sorted_X;
     Y = sorted_Y;
     Z = sorted_Z;
     TX = sorted_TX;
     TY = sorted_TY;
+    PID = sorted_PID;
 
 };
 

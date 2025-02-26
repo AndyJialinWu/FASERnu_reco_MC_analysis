@@ -11,7 +11,7 @@ int mcID; // 200025, 200026, 200035
 std::vector<int> TrackID;
 std::vector<int> PDG;
 
-// kinematics
+// kinematics: default Haruhi's method
 std::vector<double> px_reco;
 std::vector<double> py_reco;
 std::vector<double> pz_reco;
@@ -19,12 +19,24 @@ std::vector<double> pmag_reco;
 std::vector<double> theta_reco;
 std::vector<double> phi_reco;
 
+std::vector<double> pmag_ang;   // Fedra built-in
+std::vector<double> pmag_coord;
+
 std::vector<double> px_true;
 std::vector<double> py_true;
 std::vector<double> pz_true;
 std::vector<double> pmag_true;
 std::vector<double> theta_true;
 std::vector<double> phi_true;
+
+// other track-level variables
+std::vector<int> nseg;
+std::vector<double> TrackLength;
+std::vector<float> dz;      // z-distance to the primary vertex in um
+std::vector<double> IP;     // impact parameter in um
+std::vector<int> PID_start; // the starting plate ID
+std::vector<int> PID_end;   // the ending plate ID
+
 
 // discriminators
 int n_ch;
@@ -37,6 +49,7 @@ double pTmiss_mag_reco;
 double pTabs_sum_reco;
 double DeltaPhiMET_reco;
 double dphi_sum_reco;
+double tan_theta_hardest_reco;
 
 double pmag_had_vis_true;
 double dphi_max_true;
@@ -46,6 +59,7 @@ double pTmiss_mag_true;
 double pTabs_sum_true;
 double DeltaPhiMET_true;
 double dphi_sum_true;
+double tan_theta_hardest_true;
 
 void Branch(TTree *tree){
     
@@ -60,6 +74,7 @@ void Branch(TTree *tree){
     tree->Branch("pmag_reco", &pmag_reco);
     tree->Branch("theta_reco", &theta_reco);
     tree->Branch("phi_reco", &phi_reco);
+    
 
     tree->Branch("px_true", &px_true);
     tree->Branch("py_true", &py_true);
@@ -68,6 +83,15 @@ void Branch(TTree *tree){
     tree->Branch("theta_true", &theta_true);
     tree->Branch("phi_true", &phi_true);
 
+    tree->Branch("pmag_ang", &pmag_ang);
+    tree->Branch("pmag_coord", &pmag_coord);
+    tree->Branch("nseg", &nseg);
+    tree->Branch("TrackLength", &TrackLength);
+    tree->Branch("dz", &dz);
+    tree->Branch("IP", &IP);
+    tree->Branch("PID_start", &PID_start);
+    tree->Branch("PID_end", &PID_end);
+    
 
     tree->Branch("n_ch", &n_ch);
 
@@ -79,6 +103,7 @@ void Branch(TTree *tree){
     tree->Branch("pTabs_sum_reco", &pTabs_sum_reco);
     tree->Branch("DeltaPhiMET_reco", &DeltaPhiMET_reco);
     tree->Branch("dphi_sum_reco", &dphi_sum_reco);
+    tree->Branch("tan_theta_hardest_reco", &tan_theta_hardest_reco);
 
     tree->Branch("pmag_had_vis_true", &pmag_had_vis_true);
     tree->Branch("dphi_max_true", &dphi_max_true);
@@ -88,6 +113,7 @@ void Branch(TTree *tree){
     tree->Branch("pTabs_sum_true", &pTabs_sum_true);
     tree->Branch("DeltaPhiMET_true", &DeltaPhiMET_true);
     tree->Branch("dphi_sum_true", &dphi_sum_true);
+    tree->Branch("tan_theta_hardest_true", &tan_theta_hardest_true);
 
 }
 
@@ -106,6 +132,7 @@ void EventInit(){
     pTabs_sum_reco = -999.;
     DeltaPhiMET_reco = -999.;
     dphi_sum_reco = -999.;
+    tan_theta_hardest_reco = -999.;
 
     pmag_had_vis_true = -999.;
     dphi_max_true = -999.;
@@ -115,6 +142,7 @@ void EventInit(){
     pTabs_sum_true = -999.;
     DeltaPhiMET_true = -999.;
     dphi_sum_true = -999.;
+    tan_theta_hardest_true = -999.;
 
     TrackID.clear();
     PDG.clear();
@@ -126,12 +154,22 @@ void EventInit(){
     theta_reco.clear();
     phi_reco.clear();
 
+    pmag_ang.clear();
+    pmag_coord.clear();
+
     px_true.clear();
     py_true.clear();
     pz_true.clear();
     pmag_true.clear();
     theta_true.clear();
     phi_true.clear();
+
+    nseg.clear();
+    TrackLength.clear();
+    IP.clear();
+    dz.clear();
+    PID_start.clear();
+    PID_end.clear();
 
 }
 
@@ -149,12 +187,24 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
     theta_reco = disc->theta_reco;
     phi_reco = disc->phi_reco;
 
+
+
     px_true = disc->px_true;
     py_true = disc->py_true;
     pz_true = disc->pz_true;
     pmag_true = disc->pmag_true;
     theta_true = disc->theta_true;
     phi_true = disc->phi_true;
+
+    pmag_ang = disc->pmag_ang;
+    pmag_coord = disc->pmag_coord;
+
+    nseg = disc->nseg;
+    TrackLength = disc->TrackLength;
+    IP = disc->IP;
+    dz = disc->dz;
+    PID_start = disc->PID_start;
+    PID_end = disc->PID_end;
 
     n_ch = disc->n_ch;
 
@@ -166,6 +216,7 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
     pTabs_sum_reco = disc->pTabs_sum_reco;
     DeltaPhiMET_reco = disc->DeltaPhiMET_reco;
     dphi_sum_reco = disc->dphi_sum_reco;
+    tan_theta_hardest_reco = disc->tan_theta_hardest_reco;
 
     pmag_had_vis_true = disc->pmag_had_vis_true;
     dphi_max_true = disc->dphi_max_true;
@@ -175,6 +226,7 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
     pTabs_sum_true = disc->pTabs_sum_true;
     DeltaPhiMET_true = disc->DeltaPhiMET_true;
     dphi_sum_true = disc->dphi_sum_true;
+    tan_theta_hardest_true = disc->tan_theta_hardest_true;
 
 }
 

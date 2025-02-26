@@ -23,20 +23,31 @@ public:
     std::vector<int> TrackID;
     std::vector<int> PDG;
 
-    // kinematics
-    std::vector<double> px_reco;
+    // kinematics: default Haruhi's method
+    std::vector<double> px_reco; // GeV
     std::vector<double> py_reco;
     std::vector<double> pz_reco;
     std::vector<double> pmag_reco;
     std::vector<double> theta_reco;
     std::vector<double> phi_reco;
 
-    std::vector<double> px_true;
+    std::vector<double> pmag_ang;   // Fedra built-in
+    std::vector<double> pmag_coord;
+
+    std::vector<double> px_true;    // GeV
     std::vector<double> py_true;
     std::vector<double> pz_true;
     std::vector<double> pmag_true;
     std::vector<double> theta_true;
     std::vector<double> phi_true;
+
+    // other track-level variables
+    std::vector<int> nseg;
+    std::vector<double> TrackLength;
+    std::vector<float> dz;      // z-distance to the primary vertex in um
+    std::vector<double> IP;     // impact parameter in um
+    std::vector<int> PID_start; // the starting plate ID
+    std::vector<int> PID_end;   // the ending plate ID
 
     // discriminators
     int n_ch;
@@ -49,6 +60,7 @@ public:
     double pTabs_sum_reco;
     double DeltaPhiMET_reco;
     double dphi_sum_reco;
+    double tan_theta_hardest_reco;
 
     double pmag_had_vis_true;
     double dphi_max_true;
@@ -58,9 +70,10 @@ public:
     double pTabs_sum_true;
     double DeltaPhiMET_true;
     double dphi_sum_true;
+    double tan_theta_hardest_true;
 
     // member functions
-    Discriminators(TFile *f_disc, TTree *t_disc);
+    Discriminators();
     ~Discriminators();
 
     static int ChTrk_Multi(std::vector<double> pmag);
@@ -72,6 +85,7 @@ public:
     static double pT_abs_sum(std::vector<double> px, std::vector<double> py);
     static double TrackMETangle(std::vector<double> px, std::vector<double> py, std::vector<double> pz, std::vector<double> pmag, double pmag_had_vis);
     static double Delta_phi_sum(std::vector<double> px, std::vector<double> py, std::vector<double> pz, std::vector<double> pmag, double pmag_had_vis);
+    static double TanThetaHardest(std::vector<double> pmag, std::vector<double> theta);
 
     void CalcDisc(); // calculate discriminators
 
@@ -79,7 +93,7 @@ public:
 };
 #endif
 
-Discriminators::Discriminators(TFile *f_disc, TTree *t_disc){
+Discriminators::Discriminators(){
 
     EventID = -999;
     mcID = -999;
@@ -94,6 +108,7 @@ Discriminators::Discriminators(TFile *f_disc, TTree *t_disc){
     pTabs_sum_reco = -999.;
     DeltaPhiMET_reco = -999.;
     dphi_sum_reco = -999.;
+    tan_theta_hardest_reco = -999.;
 
     pmag_had_vis_true = -999.;
     dphi_max_true = -999.;
@@ -103,6 +118,7 @@ Discriminators::Discriminators(TFile *f_disc, TTree *t_disc){
     pTabs_sum_true = -999.;
     DeltaPhiMET_true = -999.;
     dphi_sum_true = -999.;
+    tan_theta_hardest_true = -999.;
 
     TrackID.clear();
     PDG.clear();
@@ -120,6 +136,16 @@ Discriminators::Discriminators(TFile *f_disc, TTree *t_disc){
     pmag_true.clear();
     theta_true.clear();
     phi_true.clear();
+
+    pmag_ang.clear();
+    pmag_coord.clear();
+
+    nseg.clear();
+    TrackLength.clear();
+    IP.clear();
+    dz.clear();
+    PID_start.clear();
+    PID_end.clear();
 
 };
 
@@ -334,6 +360,18 @@ double Discriminators::Delta_phi_sum(std::vector<double> px, std::vector<double>
 };
 
 
+double Discriminators::TanThetaHardest(std::vector<double> pmag, std::vector<double> theta){
+
+    if(pmag.size() == 0) return 0;
+
+    size_t idx_hardest = std::max_element(pmag.begin(), pmag.end()) - pmag.begin();
+    double tan_theta_hardest = std::tan(theta.at(idx_hardest));
+
+    return tan_theta_hardest;
+
+};
+
+
 void Discriminators::CalcDisc(){
 
     n_ch = ChTrk_Multi(pmag_reco);
@@ -346,6 +384,7 @@ void Discriminators::CalcDisc(){
     pTabs_sum_reco = pT_abs_sum(px_reco, py_reco);
     DeltaPhiMET_reco = TrackMETangle(px_reco, py_reco, pz_reco, pmag_reco, pmag_had_vis_reco);
     dphi_sum_reco = Delta_phi_sum(px_reco, py_reco, pz_reco, pmag_reco, pmag_had_vis_reco);
+    tan_theta_hardest_reco = TanThetaHardest(pmag_reco, theta_reco);
 
     pmag_had_vis_true = VisibleHadronicMomentum(pmag_true);
     dphi_max_true = Delta_phi_max(px_true, py_true, pz_true, pmag_true, pmag_had_vis_true);
@@ -355,6 +394,7 @@ void Discriminators::CalcDisc(){
     pTabs_sum_true = pT_abs_sum(px_true, py_true);
     DeltaPhiMET_true = TrackMETangle(px_true, py_true, pz_true, pmag_true, pmag_had_vis_true);
     dphi_sum_true = Delta_phi_sum(px_true, py_true, pz_true, pmag_true, pmag_had_vis_true);
+    tan_theta_hardest_true = TanThetaHardest(pmag_true, theta_true);
 
 };
 

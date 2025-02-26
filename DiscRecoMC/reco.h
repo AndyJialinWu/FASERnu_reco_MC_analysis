@@ -1,0 +1,281 @@
+//////////////////////////////////////////////////////////
+// This class has been automatically generated on
+// Mon Feb 24 22:28:38 2025 by ROOT version 6.32.08
+// from TTree reco/reco
+// found on file: PhysicsNTUP.root
+//////////////////////////////////////////////////////////
+
+#ifndef reco_h
+#define reco_h
+
+#include <TROOT.h>
+#include <TChain.h>
+#include <TFile.h>
+
+// Header file for the classes stored in the TTree if any.
+#include "vector"
+#include "vector"
+#include "vector"
+
+class reco {
+public :
+   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   Int_t           fCurrent; //!current Tree number in a TChain
+
+// Fixed size dimensions of array or collections stored in the TTree if any.
+
+   // Declaration of leaf types
+   Int_t           mcID;
+   Int_t           EventID;
+   std::vector<int>     *TrackID;
+   std::vector<int>     *PDG;
+   std::vector<double>  *px_reco;
+   std::vector<double>  *py_reco;
+   std::vector<double>  *pz_reco;
+   std::vector<double>  *pmag_reco;
+   std::vector<double>  *theta_reco;
+   std::vector<double>  *phi_reco;
+   std::vector<double>  *px_true;
+   std::vector<double>  *py_true;
+   std::vector<double>  *pz_true;
+   std::vector<double>  *pmag_true;
+   std::vector<double>  *theta_true;
+   std::vector<double>  *phi_true;
+   std::vector<double>  *pmag_ang;
+   std::vector<double>  *pmag_coord;
+   std::vector<int>     *nseg;
+   std::vector<double>  *TrackLength;
+   std::vector<float>   *dz;
+   std::vector<double>  *IP;
+   std::vector<int>     *PID_start;
+   std::vector<int>     *PID_end;
+   Int_t           n_ch;
+   Double_t        pmag_had_vis_reco;
+   Double_t        dphi_max_reco;
+   Double_t        p3_hardest_reco;
+   Double_t        InvThetaCh_reco;
+   Double_t        pTmiss_mag_reco;
+   Double_t        pTabs_sum_reco;
+   Double_t        DeltaPhiMET_reco;
+   Double_t        dphi_sum_reco;
+   Double_t        tan_theta_hardest_reco;
+   Double_t        pmag_had_vis_true;
+   Double_t        dphi_max_true;
+   Double_t        p3_hardest_true;
+   Double_t        InvThetaCh_true;
+   Double_t        pTmiss_mag_true;
+   Double_t        pTabs_sum_true;
+   Double_t        DeltaPhiMET_true;
+   Double_t        dphi_sum_true;
+   Double_t        tan_theta_hardest_true;
+
+   // List of branches
+   TBranch        *b_mcID;   //!
+   TBranch        *b_EventID;   //!
+   TBranch        *b_TrackID;   //!
+   TBranch        *b_PDG;   //!
+   TBranch        *b_px_reco;   //!
+   TBranch        *b_py_reco;   //!
+   TBranch        *b_pz_reco;   //!
+   TBranch        *b_pmag_reco;   //!
+   TBranch        *b_theta_reco;   //!
+   TBranch        *b_phi_reco;   //!
+   TBranch        *b_px_true;   //!
+   TBranch        *b_py_true;   //!
+   TBranch        *b_pz_true;   //!
+   TBranch        *b_pmag_true;   //!
+   TBranch        *b_theta_true;   //!
+   TBranch        *b_phi_true;   //!
+   TBranch        *b_pmag_ang;   //!
+   TBranch        *b_pmag_coord;   //!
+   TBranch        *b_nseg;   //!
+   TBranch        *b_TrackLength;   //!
+   TBranch        *b_dz;   //!
+   TBranch        *b_IP;   //!
+   TBranch        *b_PID_start;   //!
+   TBranch        *b_PID_end;   //!
+   TBranch        *b_n_ch;   //!
+   TBranch        *b_pmag_had_vis_reco;   //!
+   TBranch        *b_dphi_max_reco;   //!
+   TBranch        *b_p3_hardest_reco;   //!
+   TBranch        *b_InvThetaCh_reco;   //!
+   TBranch        *b_pTmiss_mag_reco;   //!
+   TBranch        *b_pTabs_sum_reco;   //!
+   TBranch        *b_DeltaPhiMET_reco;   //!
+   TBranch        *b_dphi_sum_reco;   //!
+   TBranch        *b_tan_theta_hardest_reco;   //!
+   TBranch        *b_pmag_had_vis_true;   //!
+   TBranch        *b_dphi_max_true;   //!
+   TBranch        *b_p3_hardest_true;   //!
+   TBranch        *b_InvThetaCh_true;   //!
+   TBranch        *b_pTmiss_mag_true;   //!
+   TBranch        *b_pTabs_sum_true;   //!
+   TBranch        *b_DeltaPhiMET_true;   //!
+   TBranch        *b_dphi_sum_true;   //!
+   TBranch        *b_tan_theta_hardest_true;   //!
+
+   reco(TTree *tree=0);
+   virtual ~reco();
+   virtual Int_t    Cut(Long64_t entry);
+   virtual Int_t    GetEntry(Long64_t entry);
+   virtual Long64_t LoadTree(Long64_t entry);
+   virtual void     Init(TTree *tree);
+   virtual void     Loop();
+   virtual bool     Notify();
+   virtual void     Show(Long64_t entry = -1);
+};
+
+#endif
+
+#ifdef reco_cxx
+reco::reco(TTree *tree) : fChain(0) 
+{
+// if parameter tree is not specified (or zero), connect the file
+// used to generate this class and read the Tree.
+   if (tree == 0) {
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("PhysicsNTUP.root");
+      if (!f || !f->IsOpen()) {
+         f = new TFile("PhysicsNTUP.root");
+      }
+      f->GetObject("reco",tree);
+
+   }
+   Init(tree);
+}
+
+reco::~reco()
+{
+   if (!fChain) return;
+   delete fChain->GetCurrentFile();
+}
+
+Int_t reco::GetEntry(Long64_t entry)
+{
+// Read contents of entry.
+   if (!fChain) return 0;
+   return fChain->GetEntry(entry);
+}
+Long64_t reco::LoadTree(Long64_t entry)
+{
+// Set the environment to read one entry
+   if (!fChain) return -5;
+   Long64_t centry = fChain->LoadTree(entry);
+   if (centry < 0) return centry;
+   if (fChain->GetTreeNumber() != fCurrent) {
+      fCurrent = fChain->GetTreeNumber();
+      Notify();
+   }
+   return centry;
+}
+
+void reco::Init(TTree *tree)
+{
+   // The Init() function is called when the selector needs to initialize
+   // a new tree or chain. Typically here the branch addresses and branch
+   // pointers of the tree will be set.
+   // It is normally not necessary to make changes to the generated
+   // code, but the routine can be extended by the user if needed.
+   // Init() will be called many times when running on PROOF
+   // (once per file to be processed).
+
+   // Set object pointer
+   TrackID = 0;
+   PDG = 0;
+   px_reco = 0;
+   py_reco = 0;
+   pz_reco = 0;
+   pmag_reco = 0;
+   theta_reco = 0;
+   phi_reco = 0;
+   px_true = 0;
+   py_true = 0;
+   pz_true = 0;
+   pmag_true = 0;
+   theta_true = 0;
+   phi_true = 0;
+   pmag_ang = 0;
+   pmag_coord = 0;
+   nseg = 0;
+   TrackLength = 0;
+   dz = 0;
+   IP = 0;
+   PID_start = 0;
+   PID_end = 0;
+   // Set branch addresses and branch pointers
+   if (!tree) return;
+   fChain = tree;
+   fCurrent = -1;
+   fChain->SetMakeClass(1);
+
+   fChain->SetBranchAddress("mcID", &mcID, &b_mcID);
+   fChain->SetBranchAddress("EventID", &EventID, &b_EventID);
+   fChain->SetBranchAddress("TrackID", &TrackID, &b_TrackID);
+   fChain->SetBranchAddress("PDG", &PDG, &b_PDG);
+   fChain->SetBranchAddress("px_reco", &px_reco, &b_px_reco);
+   fChain->SetBranchAddress("py_reco", &py_reco, &b_py_reco);
+   fChain->SetBranchAddress("pz_reco", &pz_reco, &b_pz_reco);
+   fChain->SetBranchAddress("pmag_reco", &pmag_reco, &b_pmag_reco);
+   fChain->SetBranchAddress("theta_reco", &theta_reco, &b_theta_reco);
+   fChain->SetBranchAddress("phi_reco", &phi_reco, &b_phi_reco);
+   fChain->SetBranchAddress("px_true", &px_true, &b_px_true);
+   fChain->SetBranchAddress("py_true", &py_true, &b_py_true);
+   fChain->SetBranchAddress("pz_true", &pz_true, &b_pz_true);
+   fChain->SetBranchAddress("pmag_true", &pmag_true, &b_pmag_true);
+   fChain->SetBranchAddress("theta_true", &theta_true, &b_theta_true);
+   fChain->SetBranchAddress("phi_true", &phi_true, &b_phi_true);
+   fChain->SetBranchAddress("pmag_ang", &pmag_ang, &b_pmag_ang);
+   fChain->SetBranchAddress("pmag_coord", &pmag_coord, &b_pmag_coord);
+   fChain->SetBranchAddress("nseg", &nseg, &b_nseg);
+   fChain->SetBranchAddress("TrackLength", &TrackLength, &b_TrackLength);
+   fChain->SetBranchAddress("dz", &dz, &b_dz);
+   fChain->SetBranchAddress("IP", &IP, &b_IP);
+   fChain->SetBranchAddress("PID_start", &PID_start, &b_PID_start);
+   fChain->SetBranchAddress("PID_end", &PID_end, &b_PID_end);
+   fChain->SetBranchAddress("n_ch", &n_ch, &b_n_ch);
+   fChain->SetBranchAddress("pmag_had_vis_reco", &pmag_had_vis_reco, &b_pmag_had_vis_reco);
+   fChain->SetBranchAddress("dphi_max_reco", &dphi_max_reco, &b_dphi_max_reco);
+   fChain->SetBranchAddress("p3_hardest_reco", &p3_hardest_reco, &b_p3_hardest_reco);
+   fChain->SetBranchAddress("InvThetaCh_reco", &InvThetaCh_reco, &b_InvThetaCh_reco);
+   fChain->SetBranchAddress("pTmiss_mag_reco", &pTmiss_mag_reco, &b_pTmiss_mag_reco);
+   fChain->SetBranchAddress("pTabs_sum_reco", &pTabs_sum_reco, &b_pTabs_sum_reco);
+   fChain->SetBranchAddress("DeltaPhiMET_reco", &DeltaPhiMET_reco, &b_DeltaPhiMET_reco);
+   fChain->SetBranchAddress("dphi_sum_reco", &dphi_sum_reco, &b_dphi_sum_reco);
+   fChain->SetBranchAddress("tan_theta_hardest_reco", &tan_theta_hardest_reco, &b_tan_theta_hardest_reco);
+   fChain->SetBranchAddress("pmag_had_vis_true", &pmag_had_vis_true, &b_pmag_had_vis_true);
+   fChain->SetBranchAddress("dphi_max_true", &dphi_max_true, &b_dphi_max_true);
+   fChain->SetBranchAddress("p3_hardest_true", &p3_hardest_true, &b_p3_hardest_true);
+   fChain->SetBranchAddress("InvThetaCh_true", &InvThetaCh_true, &b_InvThetaCh_true);
+   fChain->SetBranchAddress("pTmiss_mag_true", &pTmiss_mag_true, &b_pTmiss_mag_true);
+   fChain->SetBranchAddress("pTabs_sum_true", &pTabs_sum_true, &b_pTabs_sum_true);
+   fChain->SetBranchAddress("DeltaPhiMET_true", &DeltaPhiMET_true, &b_DeltaPhiMET_true);
+   fChain->SetBranchAddress("dphi_sum_true", &dphi_sum_true, &b_dphi_sum_true);
+   fChain->SetBranchAddress("tan_theta_hardest_true", &tan_theta_hardest_true, &b_tan_theta_hardest_true);
+   Notify();
+}
+
+bool reco::Notify()
+{
+   // The Notify() function is called when a new file is opened. This
+   // can be either for a new TTree in a TChain or when when a new TTree
+   // is started when using PROOF. It is normally not necessary to make changes
+   // to the generated code, but the routine can be extended by the
+   // user if needed. The return value is currently not used.
+
+   return true;
+}
+
+void reco::Show(Long64_t entry)
+{
+// Print contents of entry.
+// If entry is not specified, print current entry
+   if (!fChain) return;
+   fChain->Show(entry);
+}
+Int_t reco::Cut(Long64_t entry)
+{
+// This function may be called from Loop.
+// returns  1 if entry is accepted.
+// returns -1 otherwise.
+   return 1;
+}
+#endif // #ifdef reco_cxx
