@@ -30,22 +30,22 @@ public :
    // Declaration of leaf types
    Int_t                m_runnumber;
    Int_t                m_event_id_MC;
-   Int_t                m_NC0_CC1;
-   Int_t                m_target;
-   std::vector<int>     *m_target_PDG;
-   Int_t                m_N_target;
+   //Int_t                m_NC0_CC1;
+   //Int_t                m_target;
+   //std::vector<int>     *m_target_PDG;
+   //Int_t                m_N_target;
    Float_t              m_vx;
    Float_t              m_vy;
    Float_t              m_vz;
-   Int_t                m_NuMu0_NuE1_NuTau2;
+   //Int_t                m_NuMu0_NuE1_NuTau2;
    Int_t                m_Nu_PDG;
    Double_t             m_Nu_px;
    Double_t             m_Nu_py;
    Double_t             m_Nu_pz;
    Double_t             m_Nu_e;
-   Int_t                m_N_leptons;
-   Int_t                m_N_photons;
-   Int_t                m_N_hadrons;
+   //Int_t                m_N_leptons;
+   //Int_t                m_N_photons;
+   //Int_t                m_N_hadrons;
    std::vector<int>     *m_leptons_PDG;
    std::vector<int>     *m_photons_PDG;
    std::vector<int>     *m_hadrons_PDG;
@@ -181,7 +181,7 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
-   m_target_PDG = 0;
+   //m_target_PDG = 0;
    m_leptons_PDG = 0;
    m_photons_PDG = 0;
    m_hadrons_PDG = 0;
@@ -209,22 +209,22 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    fChain->SetMakeClass(1);
    fChain->SetBranchAddress("m_runnumber", &m_runnumber, &b_m_runnumber);
    fChain->SetBranchAddress("m_event_id_MC", &m_event_id_MC, &b_m_event_id_MC);
-   fChain->SetBranchAddress("m_NC0_CC1", &m_NC0_CC1, &b_m_NC0_CC1);
-   fChain->SetBranchAddress("m_target", &m_target, &b_m_target);
-   fChain->SetBranchAddress("m_target_PDG", &m_target_PDG, &b_m_target_PDG);
-   fChain->SetBranchAddress("m_N_target", &m_N_target, &b_m_N_target);
+   //fChain->SetBranchAddress("m_NC0_CC1", &m_NC0_CC1, &b_m_NC0_CC1);
+   //fChain->SetBranchAddress("m_target", &m_target, &b_m_target);
+   //fChain->SetBranchAddress("m_target_PDG", &m_target_PDG, &b_m_target_PDG);
+   //fChain->SetBranchAddress("m_N_target", &m_N_target, &b_m_N_target);
    fChain->SetBranchAddress("m_vx", &m_vx, &b_m_vx);
    fChain->SetBranchAddress("m_vy", &m_vy, &b_m_vy);
    fChain->SetBranchAddress("m_vz", &m_vz, &b_m_vz);
-   fChain->SetBranchAddress("m_NuMu0_NuE1_NuTau2", &m_NuMu0_NuE1_NuTau2, &b_m_NuMu0_NuE1_NuTau2);
+   //fChain->SetBranchAddress("m_NuMu0_NuE1_NuTau2", &m_NuMu0_NuE1_NuTau2, &b_m_NuMu0_NuE1_NuTau2);
    fChain->SetBranchAddress("m_Nu_PDG", &m_Nu_PDG, &b_m_Nu_PDG);
    fChain->SetBranchAddress("m_Nu_px", &m_Nu_px, &b_m_Nu_px);
    fChain->SetBranchAddress("m_Nu_py", &m_Nu_py, &b_m_Nu_py);
    fChain->SetBranchAddress("m_Nu_pz", &m_Nu_pz, &b_m_Nu_pz);
    fChain->SetBranchAddress("m_Nu_e", &m_Nu_e, &b_m_Nu_e);
-   fChain->SetBranchAddress("m_N_leptons", &m_N_leptons, &b_m_N_leptons);
-   fChain->SetBranchAddress("m_N_photons", &m_N_photons, &b_m_N_photons);
-   fChain->SetBranchAddress("m_N_hadrons", &m_N_hadrons, &b_m_N_hadrons);
+   //fChain->SetBranchAddress("m_N_leptons", &m_N_leptons, &b_m_N_leptons);
+   //fChain->SetBranchAddress("m_N_photons", &m_N_photons, &b_m_N_photons);
+   //fChain->SetBranchAddress("m_N_hadrons", &m_N_hadrons, &b_m_N_hadrons);
    fChain->SetBranchAddress("m_leptons_PDG", &m_leptons_PDG, &b_m_leptons_PDG);
    fChain->SetBranchAddress("m_photons_PDG", &m_photons_PDG, &b_m_photons_PDG);
    fChain->SetBranchAddress("m_hadrons_PDG", &m_hadrons_PDG, &b_m_hadrons_PDG);

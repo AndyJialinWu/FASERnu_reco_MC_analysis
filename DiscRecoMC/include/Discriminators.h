@@ -22,19 +22,21 @@ public:
     int mcID; // 200025, 200026, 200035
     std::vector<int> TrackID;
     std::vector<int> PDG;
+    std::vector<int> itrk;              // reconstructed MC track iterator
 
-    // kinematics: default Haruhi's method
-    std::vector<double> px_reco; // GeV
+    // kinematics: default reco
+    std::vector<double> px_reco;        // GeV
     std::vector<double> py_reco;
     std::vector<double> pz_reco;
     std::vector<double> pmag_reco;
     std::vector<double> theta_reco;
     std::vector<double> phi_reco;
 
-    std::vector<double> pmag_ang;   // Fedra built-in
+    std::vector<double> pmag_ang;       // Fedra built-in
     std::vector<double> pmag_coord;
+    std::vector<double> pmag_haruhi;    // Haruhi's method
 
-    std::vector<double> px_true;    // GeV
+    std::vector<double> px_true;        // GeV
     std::vector<double> py_true;
     std::vector<double> pz_true;
     std::vector<double> pmag_true;
@@ -42,12 +44,18 @@ public:
     std::vector<double> phi_true;
 
     // other track-level variables
-    std::vector<int> nseg;
-    std::vector<double> TrackLength;
-    std::vector<float> dz;      // z-distance to the primary vertex in um
-    std::vector<double> IP;     // impact parameter in um
-    std::vector<int> PID_start; // the starting plate ID
-    std::vector<int> PID_end;   // the ending plate ID
+    std::vector<int> nseg;              // the number of segments of a track
+    std::vector<double> TrackLength;    // track length in mm
+    std::vector<float> dz;              // z-distance to the primary vertex in um
+    std::vector<double> IP;             // impact parameter in um
+    std::vector<int> PID_start;         // the starting plate ID
+    std::vector<int> PID_end;           // the ending plate ID
+    std::vector<int> MaxGap;            // the largest gap between 2 consecutive segments
+    std::vector<double> theta_RMS;      // the standard deviation of the segment polar angle
+    std::vector<double> MaxKinkAngle;   // the largest kink angle between 2 consecutive cells by positions
+    std::vector<bool> IsPartCatChanged; // the segment particle category changed or not
+    std::vector<bool> IsTrkIdChanged;   // the segment track ID changed or not
+
 
     // discriminators
     int n_ch;
@@ -122,6 +130,12 @@ Discriminators::Discriminators(){
 
     TrackID.clear();
     PDG.clear();
+    itrk.clear();
+    MaxGap.clear();
+    theta_RMS.clear();
+    MaxKinkAngle.clear();
+    IsPartCatChanged.clear();
+    IsTrkIdChanged.clear();
     
     px_reco.clear();
     py_reco.clear();
@@ -139,6 +153,7 @@ Discriminators::Discriminators(){
 
     pmag_ang.clear();
     pmag_coord.clear();
+    pmag_haruhi.clear();
 
     nseg.clear();
     TrackLength.clear();

@@ -58,8 +58,8 @@ int main(){
 
             RecoMC->SetTrueVertex(jw_test->m_vx, jw_test->m_vy, jw_test->m_vz);
             RecoMC->GetRecoMCInfo(false);
-            RecoMC->GetRecoAngleIPdz();
-            RecoMC->SortBasedOnTrackID();
+            //RecoMC->GetRecoAngleIPdz();
+            RecoMC->SortBasedOnTrackID(false);
 
             // match primary tracks reco. and truth
             size_t trueIt=0;

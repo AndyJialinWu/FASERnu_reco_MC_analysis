@@ -1,17 +1,26 @@
 #include <vector>
 #include <cmath>
+#include <string>
 
 #include "TFile.h"
 #include "TTree.h"
 #include "Discriminators.h"
 
+
+const double TrainTestValiRatio = 0.80;
+
 // truth info
 int EventID;
-int mcID; // 200025, 200026, 200035
+int mcID;                         // 200025, 200026, 200035, 100069
+int Nu_PDG;                       // neutral mother PDG code
+double Nu_px, Nu_py, Nu_pz, Nu_e; // neutral mother 3-momentum
+
+std::string FileNum;
 std::vector<int> TrackID;
 std::vector<int> PDG;
+std::vector<int> itrk;          // reconstructed track iterator
 
-// kinematics: default Haruhi's method
+// kinematics: default reco
 std::vector<double> px_reco;
 std::vector<double> py_reco;
 std::vector<double> pz_reco;
@@ -19,7 +28,8 @@ std::vector<double> pmag_reco;
 std::vector<double> theta_reco;
 std::vector<double> phi_reco;
 
-std::vector<double> pmag_ang;   // Fedra built-in
+std::vector<double> pmag_haruhi; // Haruhi's method
+std::vector<double> pmag_ang;    // Fedra built-in
 std::vector<double> pmag_coord;
 
 std::vector<double> px_true;
@@ -32,41 +42,53 @@ std::vector<double> phi_true;
 // other track-level variables
 std::vector<int> nseg;
 std::vector<double> TrackLength;
-std::vector<float> dz;      // z-distance to the primary vertex in um
-std::vector<double> IP;     // impact parameter in um
-std::vector<int> PID_start; // the starting plate ID
-std::vector<int> PID_end;   // the ending plate ID
+std::vector<float> dz;              // z-distance to the primary vertex in um
+std::vector<double> IP;             // impact parameter in um
+std::vector<int> PID_start;         // the starting plate ID
+std::vector<int> PID_end;           // the ending plate ID
+std::vector<int> MaxGap;            // the largest gap between 2 consecutive segments
+std::vector<double> theta_RMS;      // the standard deviation of the segment polar angle
+std::vector<double> MaxKinkAngle;   // the largest kink angle between 2 consecutive cells by positions
+std::vector<bool> IsPartCatChanged; // the segment particle category changed or not
+std::vector<bool> IsTrkIdChanged;   // the segment track ID changed or not
 
 
 // discriminators
-int n_ch;
+float n_ch;
 
-double pmag_had_vis_reco;
-double dphi_max_reco;
-double p3_hardest_reco;
-double InvThetaCh_reco;
-double pTmiss_mag_reco;
-double pTabs_sum_reco;
-double DeltaPhiMET_reco;
-double dphi_sum_reco;
-double tan_theta_hardest_reco;
+float pmag_had_vis_reco;
+float dphi_max_reco;
+float p3_hardest_reco;
+float InvThetaCh_reco;
+float pTmiss_mag_reco;
+float pTabs_sum_reco;
+float DeltaPhiMET_reco;
+float dphi_sum_reco;
+float tan_theta_hardest_reco;
 
-double pmag_had_vis_true;
-double dphi_max_true;
-double p3_hardest_true;
-double InvThetaCh_true;
-double pTmiss_mag_true;
-double pTabs_sum_true;
-double DeltaPhiMET_true;
-double dphi_sum_true;
-double tan_theta_hardest_true;
+float pmag_had_vis_true;
+float dphi_max_true;
+float p3_hardest_true;
+float InvThetaCh_true;
+float pTmiss_mag_true;
+float pTabs_sum_true;
+float DeltaPhiMET_true;
+float dphi_sum_true;
+float tan_theta_hardest_true;
 
 void Branch(TTree *tree){
     
     tree->Branch("mcID", &mcID);
+    tree->Branch("FileNum", &FileNum);
+    tree->Branch("Nu_PDG", &Nu_PDG);
+    tree->Branch("Nu_px", &Nu_px);
+    tree->Branch("Nu_py", &Nu_py);  
+    tree->Branch("Nu_pz", &Nu_pz);
+    tree->Branch("Nu_e", &Nu_e);
     tree->Branch("EventID", &EventID);
     tree->Branch("TrackID", &TrackID);
     tree->Branch("PDG", &PDG);
+    tree->Branch("itrk", &itrk);
 
     tree->Branch("px_reco", &px_reco);
     tree->Branch("py_reco", &py_reco);
@@ -83,6 +105,7 @@ void Branch(TTree *tree){
     tree->Branch("theta_true", &theta_true);
     tree->Branch("phi_true", &phi_true);
 
+    tree->Branch("pmag_haruhi", &pmag_haruhi);
     tree->Branch("pmag_ang", &pmag_ang);
     tree->Branch("pmag_coord", &pmag_coord);
     tree->Branch("nseg", &nseg);
@@ -91,7 +114,11 @@ void Branch(TTree *tree){
     tree->Branch("IP", &IP);
     tree->Branch("PID_start", &PID_start);
     tree->Branch("PID_end", &PID_end);
-    
+    tree->Branch("MaxGap", &MaxGap);
+    tree->Branch("theta_RMS", &theta_RMS);
+    tree->Branch("MaxKinkAngle", &MaxKinkAngle);
+    tree->Branch("IsPartCatChanged", &IsPartCatChanged);
+    tree->Branch("IsTrkIdChanged", &IsTrkIdChanged);
 
     tree->Branch("n_ch", &n_ch);
 
@@ -121,6 +148,12 @@ void EventInit(){
 
     EventID = -999;
     mcID = -999;
+    Nu_PDG = -999;
+    Nu_px = -999.;
+    Nu_py = -999.;
+    Nu_pz = -999.;
+    Nu_e = -999.;
+    FileNum = "";
 
     n_ch = -999;
 
@@ -146,6 +179,9 @@ void EventInit(){
 
     TrackID.clear();
     PDG.clear();
+    itrk.clear();
+    IsPartCatChanged.clear();
+    IsTrkIdChanged.clear();
     
     px_reco.clear();
     py_reco.clear();
@@ -156,6 +192,7 @@ void EventInit(){
 
     pmag_ang.clear();
     pmag_coord.clear();
+    pmag_haruhi.clear();
 
     px_true.clear();
     py_true.clear();
@@ -170,6 +207,9 @@ void EventInit(){
     dz.clear();
     PID_start.clear();
     PID_end.clear();
+    MaxGap.clear();
+    theta_RMS.clear();
+    MaxKinkAngle.clear();
 
 }
 
@@ -177,18 +217,16 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
 
     mcID = disc->mcID;
     EventID = disc->EventID;
+
     TrackID = disc->TrackID;
     PDG = disc->PDG;
-
+    itrk = disc->itrk;
     px_reco = disc->px_reco;
     py_reco = disc->py_reco;
     pz_reco = disc->pz_reco;
     pmag_reco = disc->pmag_reco;
     theta_reco = disc->theta_reco;
     phi_reco = disc->phi_reco;
-
-
-
     px_true = disc->px_true;
     py_true = disc->py_true;
     pz_true = disc->pz_true;
@@ -198,6 +236,7 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
 
     pmag_ang = disc->pmag_ang;
     pmag_coord = disc->pmag_coord;
+    pmag_haruhi = disc->pmag_haruhi;
 
     nseg = disc->nseg;
     TrackLength = disc->TrackLength;
@@ -205,6 +244,11 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
     dz = disc->dz;
     PID_start = disc->PID_start;
     PID_end = disc->PID_end;
+    MaxGap = disc->MaxGap;
+    theta_RMS = disc->theta_RMS;
+    MaxKinkAngle = disc->MaxKinkAngle;
+    IsPartCatChanged = disc->IsPartCatChanged;
+    IsTrkIdChanged = disc->IsTrkIdChanged;
 
     n_ch = disc->n_ch;
 

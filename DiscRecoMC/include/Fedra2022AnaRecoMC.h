@@ -6,36 +6,42 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <regex>
 
 
-const std::string EventListFile[3] = {
-    "/home/jialwu/FASERnu_reco_MC_analysis/CheckRecoMC/EventList/NC_200025.txt",
-    "/home/jialwu/FASERnu_reco_MC_analysis/CheckRecoMC/EventList/NC_200026.txt",
-    "/home/jialwu/FASERnu_reco_MC_analysis/CheckRecoMC/EventList/NC_200035.txt"
+const std::string EventListFile[4] = {
+    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200025.txt",
+    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200026.txt",
+    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200035.txt",
+    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/Neut_100069.txt"
 };
-const std::string EventDataDir[3] = {
+const std::string EventDataDir[4] = {
     "/home/jialwu/raid/FASERnu_MC_reco/NC/200025/",
     "/home/jialwu/raid/FASERnu_MC_reco/NC/200026/",
-    "/home/jialwu/raid/FASERnu_MC_reco/NC/200035/"
+    "/home/jialwu/raid/FASERnu_MC_reco/NC/200035/",
+    "/home/jialwu/raid/FASERnu_MC_reco/MC24_PG_neut_in_fasernu_xin_100069/cp_data_files/"
 };
 
-const std::string MCtruthNTUPdir[3] = {
+const std::string MCtruthNTUPdir[4] = {
     "/home/jialwu/raid/FASERnu_MC_reco/MC24_Genie_NC_10invab/200025/NTUP/",
     "/home/jialwu/raid/FASERnu_MC_reco/MC24_Genie_NC_10invab/200026/NTUP/",
     "/home/jialwu/raid/FASERnu_MC_reco/MC24_Genie_NC_10invab/200035/NTUP/",
+    "/home/jialwu/raid/FASERnu_MC_reco/MC24_PG_neut_in_fasernu_xin_100069/NTUP/"
 };
-const std::string MCtruthNameFront[3] = {
+const std::string MCtruthNameFront[4] = {
     "FaserMC-MC24_Genie_light_eposlhc_pi_10invab-200025-",
     "FaserMC-MC24_Genie_light_eposlhc_k_10invab-200026-",
-    "FaserMC-MC24_Genie_charm_p8_monash_central_10invab-200035-"
+    "FaserMC-MC24_Genie_charm_p8_monash_central_10invab-200035-",
+    "FaserMC-MC24_PG_neut_in_fasernu_xin_100069-"
 };
-const std::string MCtruthNameRear[3] = {
+const std::string MCtruthNameRear[4] = {
     "-s0012-NTUP.root",
     "-s0012-NTUP.root",
-    "-s0012-NTUP.root"
+    "-s0012-NTUP.root",
+    "-s0013-NTUP.root"
 };
-const int NumEvtsPerNTUPfile[3] = {1000, 1000, 500};
-const int MonteCarloID[3] = {200025, 200026, 200035};
+const int NumEvtsPerNTUPfile[4] = {1000, 1000, 500, 1000};
+const int MonteCarloID[4] = {200025, 200026, 200035, 100069};
 
 
 // read in a list of evt_ID_plStart_plEnd
@@ -66,6 +72,46 @@ void PrintEventList(std::vector<std::string> * EvtList){
 };
 
 
+std::string GenieEvtIDtoFileNum(int EventID, int mcIt){
+
+    if(mcIt >= 3){
+        std::cerr << "Invalid Genie mcIt!" << std::endl;
+        return "";
+    }
+    int fnum = EventID / NumEvtsPerNTUPfile[mcIt];
+
+    // ensure that the number is formatted with a width of 5, filling unused spaces with 0
+    std::ostringstream oss;
+    oss << std::setw(5) << std::setfill('0') << fnum;
+    std::string str_fnum = oss.str();
+
+    return str_fnum;
+
+};
+
+std::string ParticleGunEventListToFileNum(std::string EventList, int mcIt){
+
+    if(mcIt < 3){
+        std::cerr << "Invalid ParticleGun mcIt!" << std::endl;
+        return "";
+    }
+
+    // EventList format: cp_data_file_FileNum/evt_EventID_plStart_plEnd
+    std::regex pattern(R"(cp_data_file_(\d{5}))"); // Look for 5-digit number after "cp_data_file_"
+    std::smatch match;
+    if (std::regex_search(EventList, match, pattern)) {
+        std::cout << "File number: " << match[1] << std::endl;
+        return match[1].str();
+    } 
+    else {
+        std::cout << "File number not found!" << std::endl;
+        return "";
+    }
+    
+    return "";
+
+};
+
 std::string EvtIDtoMCtruthNTUPfname(int EventID, int mcIt){
 
     int fnum = EventID / NumEvtsPerNTUPfile[mcIt];
@@ -80,6 +126,18 @@ std::string EvtIDtoMCtruthNTUPfname(int EventID, int mcIt){
     return fname_NTUP;
 
 };
+
+
+int ExtractEventID(std::string evt_EvtID_plStart_plEnd){
+
+    std::regex evtID_regex(R"(evt_(\d+)_pl\d+_\d+)");
+    std::smatch match;
+    std::regex_search(evt_EvtID_plStart_plEnd, match, evtID_regex);
+
+    return std::stoi(match[1].str());
+
+};
+
 
 /*
 double MCSAngErrFunc(double *x, double *p){
