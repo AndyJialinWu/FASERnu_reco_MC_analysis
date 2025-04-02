@@ -1,3 +1,5 @@
+#include <string>
+
 #include "EdbSegP.h"
 #include "EdbMomentumEstimator.h"
 #include "EdbPattern.h"
@@ -7,7 +9,9 @@
 #include "EdbDataSet.h"
 
 
-void ParseFeedBack(std::string filename){
+void ParseFeedBack(std::string FeedBackAddress, std::string FeedBackFileName){
+
+	std::string filename = FeedBackAddress + FeedBackFileName;
 
     char FlagPart[][10]={"", "mu", "charm", "e", "e-pair"};
 	char FlagCS[][10]   ={"", "cs"};
@@ -125,7 +129,34 @@ void ParseFeedBack(std::string filename){
 	pvr->Print();
 
 	EdbDataProc *dproc = new EdbDataProc();
-	dproc->MakeTracksTree(pvr, "linked_tracks.root");
+	std::string LT_output_Address = "linked_tracks/";
+	std::string FeedBackSuffix = ".feedback";
+	std::string LT_output_FileName = "linked_tracks_" + FeedBackFileName.erase(FeedBackFileName.size()-FeedBackSuffix.size()) + ".root";
+	dproc->MakeTracksTree(pvr, (LT_output_Address + LT_output_FileName).c_str());
+	
+	// Add vertex tree
+	TFile *f_linked_tracks = new TFile((LT_output_Address + LT_output_FileName).c_str(), "UPDATE");
+	TTree *t_vertex = new TTree("vertex", "vertex");
+	float vx, vy, vz;
+	int vtx_id, vtx_flag;
+	t_vertex->Branch("vx", &vx, "vx/F");
+	t_vertex->Branch("vy", &vy, "vy/F");
+	t_vertex->Branch("vz", &vz, "vz/F");
+	t_vertex->Branch("vtx_id", &vtx_id, "vtx_id/I");
+	t_vertex->Branch("vtx_flag", &vtx_flag, "vtx_flag/I");
+	for(int i=0; i<pvr->Nvtx(); i++){
+		EdbVertex *v = pvr->GetVertex(i);
+		vx = v->X();
+		vy = v->Y();
+		vz = v->Z();
+		vtx_id = v->ID();
+		vtx_flag = v->Flag();
+		t_vertex->Fill();
+	}
+	f_linked_tracks->cd();
+	t_vertex->Write();
+	f_linked_tracks->Save();
+	f_linked_tracks->Close();
 	
 	fclose(fp);
 
