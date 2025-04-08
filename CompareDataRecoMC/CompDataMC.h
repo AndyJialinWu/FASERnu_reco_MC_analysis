@@ -136,7 +136,7 @@ void DrawDataMC(TCanvas *cvs, TLegend *lg, TH1D *h1_mc, TH1D *h1_data, TString f
 
     cvs->cd();
     h1_mc->SetStats(false);
-    //h1_data->SetStats(false);
+    h1_data->SetStats(false);
     h1_mc->SetLineColor(kRed);
     h1_data->SetLineColor(kBlue);
 
@@ -154,8 +154,8 @@ void DrawDataMC(TCanvas *cvs, TLegend *lg, TH1D *h1_mc, TH1D *h1_data, TString f
     }
     
     lg->SetHeader(category);
-    lg->AddEntry(h1_mc, "MC");
-    lg->AddEntry(h1_data, "Data");
+    lg->AddEntry(h1_mc, "MC Neutral Hadrons");
+    lg->AddEntry(h1_data, "FeedBack Data");
     lg->Draw("same");
 
     cvs->SetGrid();
@@ -167,7 +167,7 @@ void StoreHist2PDF(TString FigAddress){
 
     CvsLg_Init();
 
-    TString category = "bkg";
+    TString category = "BDT Input";
     DrawDataMC(cvs, lg, h1_n_ch[0], h1_n_ch[1], FigAddress+"h1_n_ch.pdf", category);
     DrawDataMC(cvs, lg, h1_dphi_max_deg[0], h1_dphi_max_deg[1], FigAddress+"h1_dphi_max_deg.pdf", category);
     DrawDataMC(cvs, lg, h1_dphi_sum_deg[0], h1_dphi_sum_deg[1], FigAddress+"h1_dphi_sum_deg.pdf", category);

@@ -3,82 +3,108 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "discNC_TrainTest.C"
 #include "plot_disc.h"
+#include "PhysicsNTUP.C"
 
 void plot_disc(){
 
 
     TFile *f_disc = new TFile("PhysicsNTUP_ML.root", "READ");
-    TTree *t_disc[2]; // 0: NC, 1: Bkg
-    t_disc[0] = (TTree *)f_disc->Get("discNC_TrainTest");
-    t_disc[1] = (TTree *)f_disc->Get("discBkg_TrainTest");
-    discNC_TrainTest *disc[2]; // 0: NC, 1: Bkg
-    disc[0] = new discNC_TrainTest(t_disc[0]);
-    disc[1] = new discNC_TrainTest(t_disc[1]);
+    TTree *t_TrainTest[4];                       // 0: 200025, 1: 200026, 2: 200035, 3: 100069
+    PhysicsNTUP *disc[4];                        // 0: 200025, 1: 200026, 2: 200035, 3: 100069
+    for(int RunIt=0; RunIt<4; RunIt++){
+
+        t_TrainTest[RunIt] = (TTree*)f_disc->Get( Form("disc%d_TrainTest", RunNumber[RunIt]) );
+        SetNumRecoNC(t_TrainTest[RunIt], RunIt); // sequence matters ! Place this function before setting the branch address !
+
+        disc[RunIt] = new PhysicsNTUP(t_TrainTest[RunIt]);
+
+    }
 
     wgt_calc();
     Hist_Init();
+    //std::ofstream em_shower;
+    //em_shower.open("HighErgElectron.txt");
 
-    // signal: NC, background: Bkg Loop
-    for(int i=0; i<2; i++){
+    // MC Run Loop
+    for(int RunIt=0; RunIt<4; RunIt++){
 
-        for(int EvtIt=0; EvtIt<disc[i]->fChain->GetEntries(); EvtIt++){
+        int SigBkgIdx = -1;
+        if(RunIt < 3){// nu NC from 0: 200025, 1: 200026, 2: 200035
+            SigBkgIdx = 0;
+        }
+        else{         // Bkg from 3: 100069
+            SigBkgIdx = 1;
+        }
 
-            disc[i]->GetEntry(EvtIt);
-    
-            if(disc[i]->n_ch < 3) continue;
-    
-            int wgt_idx;
-            if(disc[i]->mcID == 200025) wgt_idx = 0;
-            if(disc[i]->mcID == 200026) wgt_idx = 1;
-            if(disc[i]->mcID == 200035) wgt_idx = 2;
-            if (disc[i]->mcID == 100069) wgt_idx = 3;
-    
+        // Event Loop
+        for(int EvtIt=0; EvtIt<disc[RunIt]->fChain->GetEntries(); EvtIt++){
+
+            disc[RunIt]->GetEntry(EvtIt);   // Get the event
+
+            h1_n_ch[SigBkgIdx]->Fill(double(disc[RunIt]->n_ch), weight[RunIt]);
+            //std::cout<<"RunNumber = "<<RunNumber[RunIt]<<"; n_ch = "<<disc[RunIt]->n_ch<<"; weight = "<<weight[RunIt]<<std::endl;
+            
             // Track Loop
-            for(int TrkIt=0; TrkIt<disc[i]->pmag_reco->size(); TrkIt++){
-    
-                h2_preco_ptrue->Fill(disc[i]->pmag_true->at(TrkIt), disc[i]->pmag_reco->at(TrkIt));    
-    
-            }   
-    
-            h1_n_ch[i]->Fill(disc[i]->n_ch, weight[wgt_idx]);
-    
-            h1_dphi_max_deg[i][0]->Fill(disc[i]->dphi_max_reco, weight[wgt_idx]);
-            h1_dphi_max_deg[i][1]->Fill(disc[i]->dphi_max_true, weight[wgt_idx]);
-            
-            h1_dphi_sum_deg[i][0]->Fill(disc[i]->dphi_sum_reco, weight[wgt_idx]);
-            h1_dphi_sum_deg[i][1]->Fill(disc[i]->dphi_sum_true, weight[wgt_idx]);     
-    
-            h1_DeltaPhiMET_deg[i][0]->Fill(disc[i]->DeltaPhiMET_reco, weight[wgt_idx]);
-            h1_DeltaPhiMET_deg[i][1]->Fill(disc[i]->DeltaPhiMET_true, weight[wgt_idx]);
-    
-            h1_pmag_had_vis[i][0]->Fill(disc[i]->pmag_had_vis_reco, weight[wgt_idx]);
-            h1_pmag_had_vis[i][1]->Fill(disc[i]->pmag_had_vis_true, weight[wgt_idx]);
-    
-            h1_p_had_hardest[i][0]->Fill(disc[i]->p3_hardest_reco, weight[wgt_idx]);
-            h1_p_had_hardest[i][1]->Fill(disc[i]->p3_hardest_true, weight[wgt_idx]);
-    
-            h1_pTmiss_mag[i][0]->Fill(disc[i]->pTmiss_mag_reco, weight[wgt_idx]);
-            h1_pTmiss_mag[i][1]->Fill(disc[i]->pTmiss_mag_true, weight[wgt_idx]);
-            
-            h1_pTabs_sum[i][0]->Fill(disc[i]->pTabs_sum_reco, weight[wgt_idx]);
-            h1_pTabs_sum[i][1]->Fill(disc[i]->pTabs_sum_true, weight[wgt_idx]);
-    
-            h1_InvThetaCh[i][0]->Fill(disc[i]->InvThetaCh_reco, weight[wgt_idx]);
-            h1_InvThetaCh[i][1]->Fill(disc[i]->InvThetaCh_true, weight[wgt_idx]);
-    
-            h1_tan_theta_hardest[i][0]->Fill(disc[i]->tan_theta_hardest_reco, weight[wgt_idx]);
-            h1_tan_theta_hardest[i][1]->Fill(disc[i]->tan_theta_hardest_true, weight[wgt_idx]);
-    
-    
-        }// end of Track Loop
+            for(int TrkIt=0; TrkIt<disc[RunIt]->pmag_reco->size(); TrkIt++){
+                
+                const int PDG = disc[RunIt]->PDG->at(TrkIt);
+                if( std::abs(PDG) != kElectron ){// hadron
+                    h2_preco_ptrue[0]->Fill(disc[RunIt]->pmag_true->at(TrkIt), disc[RunIt]->pmag_reco->at(TrkIt), weight[RunIt]);
+                }
+                else{// electron
+                    h2_preco_ptrue[1]->Fill(disc[RunIt]->pmag_true->at(TrkIt), disc[RunIt]->pmag_reco->at(TrkIt), weight[RunIt]);
 
-    }// end of signal: NC, background: Bkg Loop
-    // Event Loop
+                    //if(disc[RunIt]->pmag_true->at(TrkIt) > 50){ // p_e_true > 50 GeV/c
+                    //    em_shower<<"RunNumber = "<<disc[RunIt]->mcID<<"; FileNum = "<<*(disc[RunIt]->FileNum)<<"; EventID = "<<disc[RunIt]->EventID<<"\n";
+                    //}
+                }
+                
+                Fill_h2_PartCat_n_ch(PDG, disc[RunIt]->n_ch, SigBkgIdx, weight[RunIt]);
     
+            }// end of track loop
 
-    StoreHist2ROOT();
+            if(disc[RunIt]->n_ch < 3) continue;
+    
+            h1_dphi_max_deg[SigBkgIdx][0]->Fill(disc[RunIt]->dphi_max_reco, weight[RunIt]);
+            h1_dphi_max_deg[SigBkgIdx][1]->Fill(disc[RunIt]->dphi_max_true, weight[RunIt]);
+            
+            h1_dphi_sum_deg[SigBkgIdx][0]->Fill(disc[RunIt]->dphi_sum_reco, weight[RunIt]);
+            h1_dphi_sum_deg[SigBkgIdx][1]->Fill(disc[RunIt]->dphi_sum_true, weight[RunIt]);     
+    
+            h1_DeltaPhiMET_deg[SigBkgIdx][0]->Fill(disc[RunIt]->DeltaPhiMET_reco, weight[RunIt]);
+            h1_DeltaPhiMET_deg[SigBkgIdx][1]->Fill(disc[RunIt]->DeltaPhiMET_true, weight[RunIt]);
+    
+            h1_pmag_had_vis[SigBkgIdx][0]->Fill(disc[RunIt]->pmag_had_vis_reco, weight[RunIt]);
+            h1_pmag_had_vis[SigBkgIdx][1]->Fill(disc[RunIt]->pmag_had_vis_true, weight[RunIt]);
+    
+            h1_p_had_hardest[SigBkgIdx][0]->Fill(disc[RunIt]->p3_hardest_reco, weight[RunIt]);
+            h1_p_had_hardest[SigBkgIdx][1]->Fill(disc[RunIt]->p3_hardest_true, weight[RunIt]);
+    
+            h1_pTmiss_mag[SigBkgIdx][0]->Fill(disc[RunIt]->pTmiss_mag_reco, weight[RunIt]);
+            h1_pTmiss_mag[SigBkgIdx][1]->Fill(disc[RunIt]->pTmiss_mag_true, weight[RunIt]);
+            
+            h1_pTabs_sum[SigBkgIdx][0]->Fill(disc[RunIt]->pTabs_sum_reco, weight[RunIt]);
+            h1_pTabs_sum[SigBkgIdx][1]->Fill(disc[RunIt]->pTabs_sum_true, weight[RunIt]);
+    
+            h1_InvThetaCh[SigBkgIdx][0]->Fill(disc[RunIt]->InvThetaCh_reco, weight[RunIt]);
+            h1_InvThetaCh[SigBkgIdx][1]->Fill(disc[RunIt]->InvThetaCh_true, weight[RunIt]);
+    
+            h1_tan_theta_hardest[SigBkgIdx][0]->Fill(disc[RunIt]->tan_theta_hardest_reco, weight[RunIt]);
+            h1_tan_theta_hardest[SigBkgIdx][1]->Fill(disc[RunIt]->tan_theta_hardest_true, weight[RunIt]);
+
+            h1_nTrkTanThetaLeq0point1[SigBkgIdx][0]->Fill(disc[RunIt]->nTrkTanThetaLeq0point1_reco, weight[RunIt]);
+            h1_nTrkTanThetaLeq0point1[SigBkgIdx][1]->Fill(disc[RunIt]->nTrkTanThetaLeq0point1_true, weight[RunIt]);
+
+            h2_pTmissReco_pTmissTrue[SigBkgIdx]->Fill(disc[RunIt]->pTmiss_mag_true, disc[RunIt]->pTmiss_mag_reco, weight[RunIt]);
+    
+        }// end of event loop
+
+    }// end of MC Run Loop
+    
+    //em_shower.close();
+
+    StoreHist2ROOT("disc_plots.root");
 
     TString FigAddress = "Figures/discriminators/";
     StoreHist2PDF(FigAddress);

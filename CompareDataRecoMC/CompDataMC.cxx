@@ -6,7 +6,7 @@
 
 void CompDataMC(){
 
-    TFile *f_data = new TFile("PhysicsNTUP_ML_SimonThor.root");
+    TFile *f_data = new TFile("PhysicsNTUP_ML_RealData.root");
     TTree *t_data = (TTree*)f_data->Get("disc_RealData");
 
     TFile *f_mc = new TFile("PhysicsNTUP_ML.root");

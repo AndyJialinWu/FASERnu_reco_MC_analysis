@@ -19,7 +19,7 @@
  
 using namespace TMVA;
 
-void TMVAClassificationApplicationRealData( TString inputFileName = "PhysicsNTUP_ML_SimonThor.root", double BDT_cut = 0.99 )
+void TMVAClassificationApplicationRealData( TString inputFileName = "PhysicsNTUP_ML_RealData.root", double BDT_cut = 0.99 )
 {
     // This loads the library
     TMVA::Tools::Instance();
@@ -82,8 +82,9 @@ void TMVAClassificationApplicationRealData( TString inputFileName = "PhysicsNTUP
     t_validation->SetBranchAddress("nTrkTanThetaLeq0point1_reco", &nTrkTanThetaLeq0point1_reco);
     t_validation->SetBranchAddress("FileNum", &FileNum);
 
-    std::fstream outFile;
+    std::fstream outFile, bkgFile;
     outFile.open("text/NC_Candidates.txt", std::ios::out);
+    bkgFile.open("text/NeutHadron_Candidates.txt", std::ios::out);
 
     for (Long64_t ievt=0; ievt<t_validation->GetEntries(); ievt++){
 
@@ -115,12 +116,30 @@ void TMVAClassificationApplicationRealData( TString inputFileName = "PhysicsNTUP
             outFile << "nTrkTanThetaLeq0point1_reco: " << nTrkTanThetaLeq0point1_reco << "\n";
             outFile << "----------------------------------------" << "\n";
         }
+
+        if(mva < -0.99){
+            // Fiil the neutral hadron candidates text file
+            bkgFile << "----------------------------------------" << "\n";
+            bkgFile << "FileName: " << *FileNum << ", MVA value: " << mva << "\n";
+            bkgFile << "n_ch: " << n_ch << "\n";
+            bkgFile << "DeltaPhiMET_reco: " << DeltaPhiMET_reco << "\n";
+            bkgFile << "dphi_max_reco: " << dphi_max_reco << "\n";
+            bkgFile << "dphi_sum_reco: " << dphi_sum_reco << "\n";
+            bkgFile << "tan_theta_hardest_reco: " << tan_theta_hardest_reco << "\n";
+            bkgFile << "InvThetaCh_reco: " << InvThetaCh_reco << "\n";
+            bkgFile << "pmag_had_vis_reco: " << pmag_had_vis_reco << "\n";
+            bkgFile << "p3_hardest_reco: " << p3_hardest_reco << "\n";
+            bkgFile << "pTmiss_mag_reco: " << pTmiss_mag_reco << "\n";
+            bkgFile << "pTabs_sum_reco: " << pTabs_sum_reco << "\n";
+            bkgFile << "nTrkTanThetaLeq0point1_reco: " << nTrkTanThetaLeq0point1_reco << "\n";
+            bkgFile << "----------------------------------------" << "\n";
+        }
         
     }
 
 
     // Store histograms
-    BDT_StoreHist2ROOT("BDT_Figures_SimonThor.root");
+    BDT_StoreHist2ROOT("BDT_Figures_RealData.root");
 
     delete reader;
     std::cout << "==> TMVAClassificationApplication is done!" << std::endl << std::endl;
