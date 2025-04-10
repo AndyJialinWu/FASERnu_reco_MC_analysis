@@ -29,8 +29,10 @@ int main(){
     //std::cout<<__LINE__<<std::endl;
 
     // init CheckRecoPlot class
-    CheckRecoPlot *CRP = new CheckRecoPlot();
+    //CheckRecoPlot *CRP = new CheckRecoPlot();
 
+    std::ofstream EvtID_MisMatch;
+    EvtID_MisMatch.open("EvtID_MisMatch.txt");
 
     // MC 200025 200026 200035 Loop
     for(int mcIt=0; mcIt<3; mcIt++){
@@ -58,6 +60,56 @@ int main(){
 
             RecoMC->SetTrueVertex(jw_test->m_vx, jw_test->m_vy, jw_test->m_vz);
             RecoMC->GetRecoMCInfo(false);
+            if(RecoMC->eventID != jw_test->m_event_id_MC){
+                EvtID_MisMatch<<"Event ID does NOT match for "<<LTname<<"\n";
+                continue;
+            }
+
+            std::string NTUPname = EvtIDtoMCtruthNTUPfname(jw_test->m_event_id_MC, mcIt);
+            std::cout<<NTUPname<<std::endl;
+            TFile *f_NTUP = new TFile(NTUPname.c_str(), "READ");
+            TTree *t_hits = (TTree *)f_NTUP->Get("m_NuHit_tree");
+            TTree *t_kinematics = (TTree *)f_NTUP->Get("m_NuMCTruth_tree");
+            m_NuHit_tree *NTUP_hit = new m_NuHit_tree(t_hits);
+            m_NuMCTruth_tree *NTUP_kinematics = new m_NuMCTruth_tree(t_kinematics);
+
+            TString NTUP_output = EventDataDir[mcIt] + EvtNClist[mcIt]->at(EvtIt) + "/MCTruth_NTUP.root";
+            TFile *f_NTUP_output = new TFile(NTUP_output, "RECREATE");
+            TTree *t_hits_output = NTUP_hit->fChain->CloneTree(0);
+            TTree *t_kinematics_output = NTUP_kinematics->fChain->CloneTree(0);
+            
+            // hits loop
+            for(int hitIt=0; hitIt<NTUP_hit->fChain->GetEntries(); hitIt++){
+
+                NTUP_hit->GetEntry(hitIt);
+
+                if(NTUP_hit->m_event_id == jw_test->m_event_id_MC){
+                    f_NTUP_output->cd();
+                    t_hits_output->Fill();
+                }
+
+            }
+
+            // tracks kinematics loop
+            for(int trkIt=0; trkIt<NTUP_kinematics->fChain->GetEntries(); trkIt++){
+
+                NTUP_kinematics->GetEntry(trkIt);
+
+                if(NTUP_kinematics->m_event_id_MC == jw_test->m_event_id_MC){
+                    f_NTUP_output->cd();
+                    t_kinematics_output->Fill();
+                }
+
+            }
+
+            f_NTUP_output->cd();
+            t_hits_output->Write();
+            t_kinematics_output->Write();
+            f_NTUP_output->Save();
+            f_NTUP_output->Close();
+            delete f_NTUP_output;
+
+/*
             RecoMC->GetRecoAngleIPdz();
             RecoMC->SortBasedOnTrackID();
 
@@ -95,32 +147,17 @@ int main(){
                             double ptrue = RecoMC->ptrue.at(recoIt);
                             double pcoord = RecoMC->pmag_coord.at(recoIt);
                             double pang = RecoMC->pmag_ang.at(recoIt);
-                            double pharuhi = RecoMC->pmag_haruhi.at(recoIt);
 
-                            if(pharuhi > 0){
-                                CRP->h2_preco_ptrue[0]->Fill(ptrue, pharuhi, EventWeight);
+                            if(pcoord > 0 && pang > 0){
+                                CRP->h2_preco_ptrue->Fill(ptrue, std::min(pcoord, pang), EventWeight);
+                            }
+                            else if(pcoord*pang < 0){
+                                CRP->h2_preco_ptrue->Fill(ptrue, std::max(pcoord, pang), EventWeight);
                             }
                             else{
-                                CRP->h2_preco_ptrue[0]->Fill(ptrue, -5, EventWeight);
+                                CRP->h2_preco_ptrue->Fill(ptrue, -5, EventWeight); // both failed
                                 CRP->h1_nseg_precoFailed->Fill(RecoMC->NSeg.at(recoIt), EventWeight);
                             }
-
-                            if(pcoord > 0){
-                                CRP->h2_preco_ptrue[1]->Fill(ptrue, pcoord, EventWeight);
-                            }
-                            else{
-                                CRP->h2_preco_ptrue[1]->Fill(ptrue, -5, EventWeight);
-                                CRP->h1_nseg_precoFailed->Fill(RecoMC->NSeg.at(recoIt), EventWeight);
-                            }
-
-                            if(pang > 0){
-                                CRP->h2_preco_ptrue[2]->Fill(ptrue, pang, EventWeight);
-                            }
-                            else{
-                                CRP->h2_preco_ptrue[2]->Fill(ptrue, -5, EventWeight);
-                                CRP->h1_nseg_precoFailed->Fill(RecoMC->NSeg.at(recoIt), EventWeight);
-                            }
-                            
 
                         }
 
@@ -136,27 +173,33 @@ int main(){
             for(size_t recoIt=0; recoIt<RecoMC->trackID.size(); recoIt++){
                 if(RecoMC->trackID.at(recoIt) >= 20000) {
                     // secondary tracks
-                    
+
                     CRP->h2_IP_dz[1]->Fill(RecoMC->dz.at(recoIt)/1000., RecoMC->IP.at(recoIt), EventWeight);
                 }
             }
-
+*/
             f_trfile->Close();
             f_jwtest->Close();
+            f_NTUP->Close();
 
             delete jw_test;
             delete RecoMC;
-            
+            delete NTUP_hit;
+            delete NTUP_kinematics;
+
             delete f_trfile;
             delete f_jwtest;
+            delete f_NTUP;
 
         }// Event Loop
 
     }// MC 200025 200026 200035 Loop
 
-    CRP->StoreHist2ROOT("Figures");
-    delete CRP;
-   
+    //CRP->StoreHist2ROOT("Figures");
+
+    //delete CRP;
+    EvtID_MisMatch.close();
+    
     return 0;
 
 }

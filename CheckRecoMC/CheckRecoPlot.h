@@ -89,7 +89,7 @@ void CheckRecoPlot::PlotHist(TString StoreAddress){
     cvs->SetGrid();
     cvs->SaveAs(StoreAddress+"/h2_nseg_pz.pdf");
 */
-}
+};
 
 void CheckRecoPlot::StoreHist2ROOT(TString StoreAddress){
 
@@ -108,5 +108,5 @@ void CheckRecoPlot::StoreHist2ROOT(TString StoreAddress){
     f_output->Close();
     delete f_output;
 
-}
+};
 

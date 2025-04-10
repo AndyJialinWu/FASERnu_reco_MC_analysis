@@ -16,16 +16,13 @@
 #include "TObject.h"
 
 // Header file for the classes stored in the TTree if any
-#if ROOT_VERSION_CODE < 6 //headers should not be included in ROOT6, loaded with .pcm files
-#include "EdbSegment.h"
-#include "EdbCluster.h"
-#include "EdbFrame.h"
-#include "EdbView.h"
-#include "EdbSegment.h"
-#include "EdbDataSet.h"
-#include "EdbSegP.h"
-#include "EdbMath.h"
-#endif
+//#if ROOT_VERSION_CODE < 6 //headers should not be included in ROOT6, loaded with .pcm files
+#include <EdbSegP.h>
+#include <EdbScanCond.h>
+#include <EdbPattern.h>
+#include <EdbSegCouple.h>
+#include <EdbPVRec.h>
+//#endif
 
 class tracks {
 public :
@@ -71,7 +68,7 @@ public :
    Float_t         s_eP[kMaxs];   //[s_]
    Int_t           s_eMCTrack[kMaxs];   //[s_]
    Int_t           s_eMCEvt[kMaxs];   //[s_]
-   EdbID           s_eScanID[kMaxs];
+   //EdbID           s_eScanID[kMaxs];
    Int_t           sf_;
    UInt_t          sf_fUniqueID[kMaxsf];   //[sf_]
    UInt_t          sf_fBits[kMaxsf];   //[sf_]
@@ -97,7 +94,7 @@ public :
    Float_t         sf_eP[kMaxsf];   //[sf_]
    Int_t           sf_eMCTrack[kMaxsf];   //[sf_]
    Int_t           sf_eMCEvt[kMaxsf];   //[sf_]
-   EdbID           sf_eScanID[kMaxsf];
+   //EdbID           sf_eScanID[kMaxsf];
 
    // List of branches
    TBranch        *b_trid;   //!
@@ -159,7 +156,7 @@ public :
    TBranch        *b_sf_eP;   //!
    TBranch        *b_sf_eMCTrack;   //!
    TBranch        *b_sf_eMCEvt;   //!
-   TBranch        *b_sf_eScanID;   //!
+   //TBranch        *b_sf_eScanID;   //!
 
    tracks(TTree *tree=0);
    virtual ~tracks();
@@ -186,20 +183,20 @@ tracks::tracks(TTree *tree) : fChain(0)
 
    }
    Init(tree);
-};
+}
 
 tracks::~tracks()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
-};
+}
 
 Int_t tracks::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
-};
+}
 Long64_t tracks::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
@@ -211,7 +208,7 @@ Long64_t tracks::LoadTree(Long64_t entry)
       Notify();
    }
    return centry;
-};
+}
 
 void tracks::Init(TTree *tree)
 {
@@ -266,7 +263,7 @@ void tracks::Init(TTree *tree)
    fChain->SetBranchAddress("s.eP", s_eP, &b_s_eP);
    fChain->SetBranchAddress("s.eMCTrack", s_eMCTrack, &b_s_eMCTrack);
    fChain->SetBranchAddress("s.eMCEvt", s_eMCEvt, &b_s_eMCEvt);
-   fChain->SetBranchAddress("s.eScanID", s_eScanID, &b_s_eScanID);
+   //fChain->SetBranchAddress("s.eScanID", s_eScanID, &b_s_eScanID);
    fChain->SetBranchAddress("sf", &sf_, &b_sf_);
    fChain->SetBranchAddress("sf.fUniqueID", sf_fUniqueID, &b_sf_fUniqueID);
    fChain->SetBranchAddress("sf.fBits", sf_fBits, &b_sf_fBits);
@@ -292,9 +289,9 @@ void tracks::Init(TTree *tree)
    fChain->SetBranchAddress("sf.eP", sf_eP, &b_sf_eP);
    fChain->SetBranchAddress("sf.eMCTrack", sf_eMCTrack, &b_sf_eMCTrack);
    fChain->SetBranchAddress("sf.eMCEvt", sf_eMCEvt, &b_sf_eMCEvt);
-   fChain->SetBranchAddress("sf.eScanID", sf_eScanID, &b_sf_eScanID);
+   //fChain->SetBranchAddress("sf.eScanID", sf_eScanID, &b_sf_eScanID);
    Notify();
-};
+}
 
 bool tracks::Notify()
 {
@@ -305,7 +302,7 @@ bool tracks::Notify()
    // user if needed. The return value is currently not used.
 
    return true;
-};
+}
 
 void tracks::Show(Long64_t entry)
 {
@@ -313,14 +310,14 @@ void tracks::Show(Long64_t entry)
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
-};
+}
 Int_t tracks::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
-};
+}
 
 
 void tracks::Loop()

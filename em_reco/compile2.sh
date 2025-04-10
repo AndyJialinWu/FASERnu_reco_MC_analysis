@@ -1,0 +1,1 @@
+g++ showerreciseg.cpp -I$FEDRA_ROOT/include `root-config --cflags --libs --glibs --evelibs` -L$FEDRA_ROOT/lib -lPhysics -lEdb -lEIO -lEbase -lEdr -lvt -lEmath -lAlignment -lEphys -lDataConversion -lEDA -lScan  -lEve -lShower -lEIO -lAlignment -lMLP -lSpectrum -lDataConversion -o showerreciseg

@@ -6,10 +6,10 @@
 
 //#include "tracks.C"
 //#include "NuMCTruth_kinematics.C"
-#include "anaRecoMC.h"
-//#include "line3Dfit.h"
+#include "./include/anaRecoMC.h"
+//#include "line3Df
 
-void anaRecoMC(){
+int main(){
 
     std::vector<std::string> *EvtNC200025 = new std::vector<std::string>();
     std::vector<std::string> *EvtNC200026 = new std::vector<std::string>();
@@ -35,6 +35,8 @@ void anaRecoMC(){
 
     //CRP->PlotHist("/home/jialwu/FASERnu_reco_MC_analysis/CheckRecoMC/Figures");
     //CRP->StoreHist2ROOT("/home/jialwu/FASERnu_reco_MC_analysis/CheckRecoMC/Figures");
+
+    return 0;
     
 }
 

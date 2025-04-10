@@ -59,6 +59,8 @@ public:
 
     // discriminators
     int n_ch;
+    int nTrkTanThetaLeq0point1_reco;
+    int nTrkTanThetaLeq0point1_true;
 
     double pmag_had_vis_reco;
     double dphi_max_reco;
@@ -85,6 +87,7 @@ public:
     ~Discriminators();
 
     static int ChTrk_Multi(std::vector<double> pmag);
+    static int nTrk_TanThetaThreshold(std::vector<double> theta);
     static double VisibleHadronicMomentum(std::vector<double> pmag);
     static double Delta_phi_max(std::vector<double> px, std::vector<double> py, std::vector<double> pz, std::vector<double> pmag, double pmag_had_vis);
     static double HardestTrackMomentum(std::vector<double> pmag);
@@ -107,6 +110,8 @@ Discriminators::Discriminators(){
     mcID = -999;
 
     n_ch = -999;
+    nTrkTanThetaLeq0point1_reco = -999;
+    nTrkTanThetaLeq0point1_true = -999;
 
     pmag_had_vis_reco = -999.;
     dphi_max_reco = -999.;
@@ -172,6 +177,24 @@ int Discriminators::ChTrk_Multi(std::vector<double> pmag){
 
     int n_ch = pmag.size();
     return n_ch;
+
+};
+
+int Discriminators::nTrk_TanThetaThreshold(std::vector<double> theta){
+
+    int nTrkTanThetaLeq0point1 = 0;
+
+    // Track Loop
+    for(size_t TrkIt=0; TrkIt<theta.size(); TrkIt++){
+
+        double TanTheta = std::tan(theta.at(TrkIt));
+        if(TanTheta < 0.1){
+            nTrkTanThetaLeq0point1++;
+        }
+
+    }// End of Track Loop
+
+    return nTrkTanThetaLeq0point1;
 
 };
 
@@ -390,6 +413,8 @@ double Discriminators::TanThetaHardest(std::vector<double> pmag, std::vector<dou
 void Discriminators::CalcDisc(){
 
     n_ch = ChTrk_Multi(pmag_reco);
+    nTrkTanThetaLeq0point1_reco = nTrk_TanThetaThreshold(theta_reco);
+    nTrkTanThetaLeq0point1_true = nTrk_TanThetaThreshold(theta_true);
 
     pmag_had_vis_reco = VisibleHadronicMomentum(pmag_reco);
     dphi_max_reco = Delta_phi_max(px_reco, py_reco, pz_reco, pmag_reco, pmag_had_vis_reco);

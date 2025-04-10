@@ -10,7 +10,8 @@
 
 // Header file for the classes stored in the TTree if any.
 #include <vector>
-using namespace std;
+#include <cmath>
+//using namespace std;
 
 #include "TROOT.h"
 #include "TChain.h"
@@ -27,43 +28,43 @@ public :
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
-   Int_t           m_runnumber;
-   Int_t           m_event_id_MC;
-   Int_t           m_NC0_CC1;
-   Int_t           m_target;
-   vector<int>     *m_target_PDG;
-   Int_t           m_N_target;
-   Float_t         m_vx;
-   Float_t         m_vy;
-   Float_t         m_vz;
-   Int_t           m_NuMu0_NuE1_NuTau2;
-   Int_t           m_Nu_PDG;
-   Double_t        m_Nu_px;
-   Double_t        m_Nu_py;
-   Double_t        m_Nu_pz;
-   Double_t        m_Nu_e;
-   Int_t           m_N_leptons;
-   Int_t           m_N_photons;
-   Int_t           m_N_hadrons;
-   vector<int>     *m_leptons_PDG;
-   vector<int>     *m_photons_PDG;
-   vector<int>     *m_hadrons_PDG;
-   vector<int>     *m_leptons_track_id;
-   vector<int>     *m_photons_track_id;
-   vector<int>     *m_hadrons_track_id;
-   vector<double>  *m_leptons_px;
-   vector<double>  *m_leptons_py;
-   vector<double>  *m_leptons_pz;
-   vector<double>  *m_leptons_e;
-   vector<double>  *m_photons_px;
-   vector<double>  *m_photons_py;
-   vector<double>  *m_photons_pz;
-   vector<double>  *m_photons_e;
-   vector<double>  *m_hadrons_px;
-   vector<double>  *m_hadrons_py;
-   vector<double>  *m_hadrons_pz;
-   vector<double>  *m_hadrons_e;
-   vector<double>  *m_hadrons_ch;
+   Int_t                m_runnumber;
+   Int_t                m_event_id_MC;
+   Int_t                m_NC0_CC1;
+   Int_t                m_target;
+   std::vector<int>     *m_target_PDG;
+   Int_t                m_N_target;
+   Float_t              m_vx;
+   Float_t              m_vy;
+   Float_t              m_vz;
+   Int_t                m_NuMu0_NuE1_NuTau2;
+   Int_t                m_Nu_PDG;
+   Double_t             m_Nu_px;
+   Double_t             m_Nu_py;
+   Double_t             m_Nu_pz;
+   Double_t             m_Nu_e;
+   Int_t                m_N_leptons;
+   Int_t                m_N_photons;
+   Int_t                m_N_hadrons;
+   std::vector<int>     *m_leptons_PDG;
+   std::vector<int>     *m_photons_PDG;
+   std::vector<int>     *m_hadrons_PDG;
+   std::vector<int>     *m_leptons_track_id;
+   std::vector<int>     *m_photons_track_id;
+   std::vector<int>     *m_hadrons_track_id;
+   std::vector<double>  *m_leptons_px;
+   std::vector<double>  *m_leptons_py;
+   std::vector<double>  *m_leptons_pz;
+   std::vector<double>  *m_leptons_e;
+   std::vector<double>  *m_photons_px;
+   std::vector<double>  *m_photons_py;
+   std::vector<double>  *m_photons_pz;
+   std::vector<double>  *m_photons_e;
+   std::vector<double>  *m_hadrons_px;
+   std::vector<double>  *m_hadrons_py;
+   std::vector<double>  *m_hadrons_pz;
+   std::vector<double>  *m_hadrons_e;
+   std::vector<double>  *m_hadrons_ch;
 
    // List of branches
    TBranch        *b_m_runnumber;   //!
@@ -105,6 +106,7 @@ public :
    TBranch        *b_m_hadrons_ch;   //!
 
    // reconstructable MC truth (i.e. charged primary particles)
+   int n_ch;                       // MC truth charged tracks multiplicity
    std::vector<int> trackID;       // MC truth track ID
    std::vector<int> PDG;           // MC truth track pdg code
    std::vector<TLorentzVector> p4; // MC truth track 4-momentum
@@ -122,11 +124,11 @@ public :
    virtual void     Loop();
    virtual bool     Notify();
    virtual void     Show(Long64_t entry = -1);
+   static bool IsPrimTrack(double pz, double theta);
 
    void GetRecoMCtruth();           // Get reconstructable MC truth info. 
 
 };
-
 
 NuMCTruth_kinematics::NuMCTruth_kinematics(TTree *tree) : fChain(0) 
 {
@@ -244,7 +246,8 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    fChain->SetBranchAddress("m_hadrons_ch", &m_hadrons_ch, &b_m_hadrons_ch);
    Notify();
 
-   // set the reconstructable MC truth
+   // initialize the reconstructable MC truth
+   n_ch = 0;
    trackID.clear();
    PDG.clear();
    p4.clear();
@@ -318,6 +321,15 @@ void NuMCTruth_kinematics::Loop()
    }
 };
 
+bool NuMCTruth_kinematics::IsPrimTrack(double pz, double theta){
+
+   bool pz_cut = pz >= 0.6; // GeV
+   bool tanThetaCut = std::tan(theta) < 0.5;
+
+   return pz_cut && tanThetaCut;
+
+};
+
 
 void NuMCTruth_kinematics::GetRecoMCtruth(){
 
@@ -347,6 +359,10 @@ void NuMCTruth_kinematics::GetRecoMCtruth(){
             charge.push_back(+1);
          }
 
+         if(IsPrimTrack(m_leptons_pz->at(lepIt), p4lep.Vect().Theta())){
+            n_ch++;
+         }
+
       }
 
    }
@@ -366,6 +382,10 @@ void NuMCTruth_kinematics::GetRecoMCtruth(){
       theta.push_back(p4had.Vect().Theta());
       phi.push_back(p4had.Vect().Phi());
       charge.push_back(m_hadrons_ch->at(hadIt));
+
+      if(IsPrimTrack(m_hadrons_pz->at(hadIt), p4had.Vect().Theta())){
+         n_ch++;
+      }
 
    }
 

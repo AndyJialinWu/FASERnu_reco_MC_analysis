@@ -55,6 +55,8 @@ std::vector<bool> IsTrkIdChanged;   // the segment track ID changed or not
 
 // discriminators
 float n_ch;
+float nTrkTanThetaLeq0point1_reco;
+float nTrkTanThetaLeq0point1_true;
 
 float pmag_had_vis_reco;
 float dphi_max_reco;
@@ -121,6 +123,8 @@ void Branch(TTree *tree){
     tree->Branch("IsTrkIdChanged", &IsTrkIdChanged);
 
     tree->Branch("n_ch", &n_ch);
+    tree->Branch("nTrkTanThetaLeq0point1_reco", &nTrkTanThetaLeq0point1_reco);
+    tree->Branch("nTrkTanThetaLeq0point1_true", &nTrkTanThetaLeq0point1_true);
 
     tree->Branch("pmag_had_vis_reco", &pmag_had_vis_reco);
     tree->Branch("dphi_max_reco", &dphi_max_reco);
@@ -251,6 +255,8 @@ void PassDiscAddressToTTreeAddress(Discriminators *disc){
     IsTrkIdChanged = disc->IsTrkIdChanged;
 
     n_ch = disc->n_ch;
+    nTrkTanThetaLeq0point1_reco = disc->nTrkTanThetaLeq0point1_reco;
+    nTrkTanThetaLeq0point1_true = disc->nTrkTanThetaLeq0point1_true;
 
     pmag_had_vis_reco = disc->pmag_had_vis_reco;
     dphi_max_reco = disc->dphi_max_reco;

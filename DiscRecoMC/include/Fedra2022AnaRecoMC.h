@@ -13,7 +13,7 @@ const std::string EventListFile[4] = {
     "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200025.txt",
     "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200026.txt",
     "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/NC_200035.txt",
-    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/Neut_100069.txt"
+    "/home/jialwu/FASERnu_reco_MC_analysis/DiscRecoMC/EventList/100069.txt"
 };
 const std::string EventDataDir[4] = {
     "/home/jialwu/raid/FASERnu_MC_reco/NC/200025/",

@@ -15,10 +15,11 @@
 
 int main(){
 
-    std::string RealDataAddress = "../AnaFeedBackFiles/linked_tracks/";
+    std::string RealDataAddress = "../AnaFeedBackFiles/linked_tracks_to_be_checked/";
     std::vector<std::string> LinkedTracksFileNames = GetLinkedTracksFileNames(RealDataAddress);
+    std::cout << "Found " << LinkedTracksFileNames.size() << " files in " << RealDataAddress << std::endl;
 
-    TFile *f_disc = new TFile("PhysicsNTUP_ML.root", "RECREATE");
+    TFile *f_disc = new TFile("PhysicsNTUP_ML_RealData.root", "RECREATE");
     TTree *t_disc = new TTree("disc_RealData", "disc_RealData");
     Branch(t_disc);
     
@@ -90,6 +91,7 @@ int main(){
         Nu_py = -999;
         Nu_pz = -999;
         Nu_e = -999;
+        FileNum = LinkedTracksFileNames[EvtIt];
 
         // calculate discriminators
         disc->CalcDisc();

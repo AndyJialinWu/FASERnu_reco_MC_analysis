@@ -96,7 +96,7 @@ class LinkedTracks{
         static bool IsValueChanged(std::vector<int> vec);
         static float GetPmagReco(float ePharuhi, float ePcoord, float ePang, float ptrue, int PDG, int nseg);
         void GetRecoMCInfo(bool ToPrintTrkInfo);
-        void PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoord, float epAng, float epHaruhi);
+        void PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoord, float epAng, float epHaruhi, float IP);
         
         static double CalcTrackLength(std::vector<float> x, std::vector<float> y, std::vector<float> z);
         //void GetRecoAngleIPdz();  // get theta, phi, IP, dz, TrackLength
@@ -228,7 +228,7 @@ void LinkedTracks::SetRecoMCInfo(int FedraEvtID, std::vector<int> FedraTrkID, st
 };
 */
 
-void LinkedTracks::PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoord, float epAng, float epHaruhi){
+void LinkedTracks::PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoord, float epAng, float epHaruhi, float IP){
 
     std::cout<<"itrk = "<<TrackIt<<"; ";
     std::cout<<"Track ID = "<<trk->Track()<<"; ";
@@ -239,6 +239,7 @@ void LinkedTracks::PrintTrkInfo(EdbSegP *trk, int TrackIt, int nseg, float epCoo
     std::cout<<"Pharuhi = "<<epHaruhi<<" GeV/c; ";
     std::cout<<"# seg. = "<<nseg<<"; ";
     std::cout<<"dz = "<< (trk->Z()-vz_hit_true)/1000. <<" mm;"<<std::endl;
+    std::cout<<"IP = "<<IP<<" um;"<<std::endl;
 
 };
 
@@ -443,7 +444,7 @@ void LinkedTracks::GetRecoMCInfo(bool ToPrintTrkInfo){
         TrackLength.push_back(TraLen);
         pmag_reco.push_back(GetPmagReco(eP_haruhi, eP_coord, eP_ang, trk->P(), trk->MCTrack(), nseg));
 
-        if(ToPrintTrkInfo) PrintTrkInfo(trk, trkIt, nseg, eP_coord, eP_ang, eP_haruhi);
+        if(ToPrintTrkInfo) PrintTrkInfo(trk, trkIt, nseg, eP_coord, eP_ang, eP_haruhi, ImpactParameter);
 
         delete trkP;
         
@@ -504,7 +505,7 @@ bool LinkedTracks::IsPrimTrack(int TrackIt){
     bool TransConfine = dr < (dz * 0.5);
 
     bool tanThetaCut = std::tan(theta.at(TrackIt)) < 0.5;
-    bool IPcut = IP.at(TrackIt) < 5; // um
+    bool IPcut = IP.at(TrackIt) < 10; // um
 
     return StartWithin3PlatesDownStream && TransConfine && tanThetaCut && IPcut;
 

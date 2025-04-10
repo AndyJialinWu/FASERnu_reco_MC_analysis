@@ -24,13 +24,14 @@ int main(){
     for(int mcIt=0; mcIt<4; mcIt++){
         EvtNClist[mcIt] = new std::vector<std::string>();   // Allocate each vector
         ReadEventList(EvtNClist[mcIt], EventListFile[mcIt]);
-        std::cout<<"# NC events from "<<EventListFile[mcIt]<<" = "<<EvtNClist[mcIt]->size()<<std::endl;
+        std::cout<<"# Events from "<<EventListFile[mcIt]<<" = "<<EvtNClist[mcIt]->size()<<std::endl;
     }
     //PrintEventList(EvtNClist[0]);
 
     TFile *f_disc = new TFile("PhysicsNTUP_ML.root", "RECREATE");
     TTree *t_disc[4][2];    // 0: 200025, 1: 200026, 2: 200035, 3: 100069; 0: TrainAndTest, 1: Validation
     for(int mcIt=0; mcIt<4; mcIt++){
+        f_disc->cd();
         t_disc[mcIt][0] = new TTree(Form("disc%d_TrainTest", MonteCarloID[mcIt]), Form("disc%d_TrainTest", MonteCarloID[mcIt]));
         t_disc[mcIt][1] = new TTree(Form("disc%d_Validation", MonteCarloID[mcIt]), Form("disc%d_Validation", MonteCarloID[mcIt]));
         Branch(t_disc[mcIt][0]);   // TrainAndTest
@@ -42,6 +43,7 @@ int main(){
         
         int NEvts = EvtNClist[mcIt]->size();
         //double EventWeight = Run3ExpNC[mcIt] / NEvts;
+        //NEvts = 10; // for test
 
         // Event Loop
         for(int EvtIt=0; EvtIt<NEvts; EvtIt++){

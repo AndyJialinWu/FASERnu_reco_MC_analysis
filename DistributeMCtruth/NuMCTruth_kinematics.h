@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Jan 21 12:41:12 2025 by ROOT version 6.32.04
+// Fri Feb 28 09:54:57 2025 by ROOT version 6.32.04
 // from TTree NuMCTruth_kinematics/NuMCTruth_kinematics
-// found on file: /home/jialwu/raid/FASERnu_MC_reco/NC/200025/evt_7_pl114_214/jw_test.root
+// found on file: FaserMC-MC24_PG_neut_in_fasernu_xin-100069-00000-s0013-NTUP_jw_test.root
 //////////////////////////////////////////////////////////
 
 #ifndef NuMCTruth_kinematics_h
@@ -13,8 +13,8 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include <vector>
-using namespace std;
+#include "vector"
+#include "vector"
 
 class NuMCTruth_kinematics {
 public :
@@ -26,61 +26,47 @@ public :
    // Declaration of leaf types
    Int_t           m_runnumber;
    Int_t           m_event_id_MC;
-   Int_t           m_NC0_CC1;
-   Int_t           m_target;
-   vector<int>     *m_target_PDG;
-   Int_t           m_N_target;
    Float_t         m_vx;
    Float_t         m_vy;
    Float_t         m_vz;
-   Int_t           m_NuMu0_NuE1_NuTau2;
    Int_t           m_Nu_PDG;
    Double_t        m_Nu_px;
    Double_t        m_Nu_py;
    Double_t        m_Nu_pz;
    Double_t        m_Nu_e;
-   Int_t           m_N_leptons;
-   Int_t           m_N_photons;
-   Int_t           m_N_hadrons;
-   vector<int>     *m_leptons_PDG;
-   vector<int>     *m_photons_PDG;
-   vector<int>     *m_hadrons_PDG;
-   vector<int>     *m_leptons_track_id;
-   vector<int>     *m_photons_track_id;
-   vector<int>     *m_hadrons_track_id;
-   vector<double>  *m_leptons_px;
-   vector<double>  *m_leptons_py;
-   vector<double>  *m_leptons_pz;
-   vector<double>  *m_leptons_e;
-   vector<double>  *m_photons_px;
-   vector<double>  *m_photons_py;
-   vector<double>  *m_photons_pz;
-   vector<double>  *m_photons_e;
-   vector<double>  *m_hadrons_px;
-   vector<double>  *m_hadrons_py;
-   vector<double>  *m_hadrons_pz;
-   vector<double>  *m_hadrons_e;
-   vector<double>  *m_hadrons_ch;
+   std::vector<int>     *m_leptons_PDG;
+   std::vector<int>     *m_photons_PDG;
+   std::vector<int>     *m_hadrons_PDG;
+   std::vector<int>     *m_leptons_track_id;
+   std::vector<int>     *m_photons_track_id;
+   std::vector<int>     *m_hadrons_track_id;
+   std::vector<double>  *m_leptons_px;
+   std::vector<double>  *m_leptons_py;
+   std::vector<double>  *m_leptons_pz;
+   std::vector<double>  *m_leptons_e;
+   std::vector<double>  *m_photons_px;
+   std::vector<double>  *m_photons_py;
+   std::vector<double>  *m_photons_pz;
+   std::vector<double>  *m_photons_e;
+   std::vector<double>  *m_hadrons_px;
+   std::vector<double>  *m_hadrons_py;
+   std::vector<double>  *m_hadrons_pz;
+   std::vector<double>  *m_hadrons_e;
+   std::vector<double>  *m_hadrons_ch;
+   //std::vector<double>  *m_hadrons_m;
+   //std::vector<double>  *m_hadrons_Ekin;
 
    // List of branches
    TBranch        *b_m_runnumber;   //!
    TBranch        *b_m_event_id_MC;   //!
-   TBranch        *b_m_NC0_CC1;   //!
-   TBranch        *b_m_target;   //!
-   TBranch        *b_m_target_PDG;   //!
-   TBranch        *b_m_N_target;   //!
    TBranch        *b_m_vx;   //!
    TBranch        *b_m_vy;   //!
    TBranch        *b_m_vz;   //!
-   TBranch        *b_m_NuMu0_NuE1_NuTau2;   //!
    TBranch        *b_m_Nu_PDG;   //!
    TBranch        *b_m_Nu_px;   //!
    TBranch        *b_m_Nu_py;   //!
    TBranch        *b_m_Nu_pz;   //!
    TBranch        *b_m_Nu_e;   //!
-   TBranch        *b_m_N_leptons;   //!
-   TBranch        *b_m_N_photons;   //!
-   TBranch        *b_m_N_hadrons;   //!
    TBranch        *b_m_leptons_PDG;   //!
    TBranch        *b_m_photons_PDG;   //!
    TBranch        *b_m_hadrons_PDG;   //!
@@ -100,6 +86,8 @@ public :
    TBranch        *b_m_hadrons_pz;   //!
    TBranch        *b_m_hadrons_e;   //!
    TBranch        *b_m_hadrons_ch;   //!
+   //TBranch        *b_m_hadrons_m;   //!
+   //TBranch        *b_m_hadrons_Ekin;   //!
 
    NuMCTruth_kinematics(TTree *tree=0);
    virtual ~NuMCTruth_kinematics();
@@ -112,15 +100,17 @@ public :
    virtual void     Show(Long64_t entry = -1);
 };
 
+#endif
 
+#ifdef NuMCTruth_kinematics_cxx
 NuMCTruth_kinematics::NuMCTruth_kinematics(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/home/jialwu/raid/FASERnu_MC_reco/NC/200025/evt_7_pl114_214/jw_test.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("FaserMC-MC24_PG_neut_in_fasernu_xin-100069-00000-s0013-NTUP_jw_test.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/home/jialwu/raid/FASERnu_MC_reco/NC/200025/evt_7_pl114_214/jw_test.root");
+         f = new TFile("FaserMC-MC24_PG_neut_in_fasernu_xin-100069-00000-s0013-NTUP_jw_test.root");
       }
       f->GetObject("NuMCTruth_kinematics",tree);
 
@@ -164,7 +154,6 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
-   m_target_PDG = 0;
    m_leptons_PDG = 0;
    m_photons_PDG = 0;
    m_hadrons_PDG = 0;
@@ -184,6 +173,8 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    m_hadrons_pz = 0;
    m_hadrons_e = 0;
    m_hadrons_ch = 0;
+   //m_hadrons_m = 0;
+   //m_hadrons_Ekin = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -192,22 +183,14 @@ void NuMCTruth_kinematics::Init(TTree *tree)
 
    fChain->SetBranchAddress("m_runnumber", &m_runnumber, &b_m_runnumber);
    fChain->SetBranchAddress("m_event_id_MC", &m_event_id_MC, &b_m_event_id_MC);
-   fChain->SetBranchAddress("m_NC0_CC1", &m_NC0_CC1, &b_m_NC0_CC1);
-   fChain->SetBranchAddress("m_target", &m_target, &b_m_target);
-   fChain->SetBranchAddress("m_target_PDG", &m_target_PDG, &b_m_target_PDG);
-   fChain->SetBranchAddress("m_N_target", &m_N_target, &b_m_N_target);
    fChain->SetBranchAddress("m_vx", &m_vx, &b_m_vx);
    fChain->SetBranchAddress("m_vy", &m_vy, &b_m_vy);
    fChain->SetBranchAddress("m_vz", &m_vz, &b_m_vz);
-   fChain->SetBranchAddress("m_NuMu0_NuE1_NuTau2", &m_NuMu0_NuE1_NuTau2, &b_m_NuMu0_NuE1_NuTau2);
    fChain->SetBranchAddress("m_Nu_PDG", &m_Nu_PDG, &b_m_Nu_PDG);
    fChain->SetBranchAddress("m_Nu_px", &m_Nu_px, &b_m_Nu_px);
    fChain->SetBranchAddress("m_Nu_py", &m_Nu_py, &b_m_Nu_py);
    fChain->SetBranchAddress("m_Nu_pz", &m_Nu_pz, &b_m_Nu_pz);
    fChain->SetBranchAddress("m_Nu_e", &m_Nu_e, &b_m_Nu_e);
-   fChain->SetBranchAddress("m_N_leptons", &m_N_leptons, &b_m_N_leptons);
-   fChain->SetBranchAddress("m_N_photons", &m_N_photons, &b_m_N_photons);
-   fChain->SetBranchAddress("m_N_hadrons", &m_N_hadrons, &b_m_N_hadrons);
    fChain->SetBranchAddress("m_leptons_PDG", &m_leptons_PDG, &b_m_leptons_PDG);
    fChain->SetBranchAddress("m_photons_PDG", &m_photons_PDG, &b_m_photons_PDG);
    fChain->SetBranchAddress("m_hadrons_PDG", &m_hadrons_PDG, &b_m_hadrons_PDG);
@@ -227,6 +210,8 @@ void NuMCTruth_kinematics::Init(TTree *tree)
    fChain->SetBranchAddress("m_hadrons_pz", &m_hadrons_pz, &b_m_hadrons_pz);
    fChain->SetBranchAddress("m_hadrons_e", &m_hadrons_e, &b_m_hadrons_e);
    fChain->SetBranchAddress("m_hadrons_ch", &m_hadrons_ch, &b_m_hadrons_ch);
+   //fChain->SetBranchAddress("m_hadrons_m", &m_hadrons_m, &b_m_hadrons_m);
+   //fChain->SetBranchAddress("m_hadrons_Ekin", &m_hadrons_Ekin, &b_m_hadrons_Ekin);
    Notify();
 }
 
@@ -255,43 +240,4 @@ Int_t NuMCTruth_kinematics::Cut(Long64_t entry)
 // returns -1 otherwise.
    return 1;
 }
-
-void NuMCTruth_kinematics::Loop()
-{
-//   In a ROOT session, you can do:
-//      root> .L NuMCTruth_kinematics.C
-//      root> NuMCTruth_kinematics t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
-//    fChain->SetBranchStatus("*",0);  // disable all branches
-//    fChain->SetBranchStatus("branchname",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
-   if (fChain == 0) return;
-
-   Long64_t nentries = fChain->GetEntriesFast();
-
-   Long64_t nbytes = 0, nb = 0;
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // if (Cut(ientry) < 0) continue;
-   }
-};
-
-#endif // #ifndef NuMCTruth_kinematics_h
+#endif // #ifdef NuMCTruth_kinematics_cxx

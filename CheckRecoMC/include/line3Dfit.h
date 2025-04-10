@@ -9,7 +9,6 @@
 #include <TPolyLine3D.h>
 #include <Math/Vector3D.h>
 #include <Fit/Fitter.h>
-#include <TVector3.h>
  
 #include <cassert>
  
@@ -24,7 +23,7 @@ void line(double t, const double *p, double &x, double &y, double &z) {
    x = p[0] + p[1]*t;
    y = p[2] + p[3]*t;
    z = t;
-};
+}
  
  
 
@@ -61,11 +60,9 @@ struct SumDistance2 {
          double d = distance2(x[i],y[i],z[i],par);
          sum += d;
       }
-      /*
       if (first) {
-         std::cout << "Total Initial distance square = " << sum << std::endl;
+         //std::cout << "Total Initial distance square = " << sum << std::endl;
       }
-      */
       first = false;
       return sum;
    }
@@ -79,7 +76,7 @@ const double *line3Dfit(std::vector<float> X, std::vector<float> Y, std::vector<
       std::cout<<"The number of points is not enough for defining a line !"<<std::endl;
    }
 
-   if(npoints > 2) npoints = 2; // fit first 2 segments
+   if(npoints > 5) npoints = 5; // fit first 5 segments
 
    TGraph2D * gr = new TGraph2D();
    // generate graph with the 3d points
@@ -106,7 +103,7 @@ const double *line3Dfit(std::vector<float> X, std::vector<float> Y, std::vector<
    
 
    fitter->SetFCN(fcn,pStart);
-   // set step sizes different than default ones (0.0001 times parameter values)
+   // set step sizes different than default ones (0.3 times parameter values)
    for (int i = 0; i < 4; ++i) fitter->Config().ParSettings(i).SetStepSize(0.0001);
 
    bool ok = fitter->FitFCN();
@@ -116,24 +113,11 @@ const double *line3Dfit(std::vector<float> X, std::vector<float> Y, std::vector<
 
    const ROOT::Fit::FitResult & result = fitter->Result();
  
-   //std::cout << "Total final distance square = " << result.MinFcnValue() << std::endl;
+   //std::cout << "Total final distance square " << result.MinFcnValue() << std::endl;
    //result.Print(std::cout);
 
    const double *parFit = result.GetParams(); // p
    return parFit;
 
-};
-
-double GetImpactParameter(TVector3 TrkDirVect, double p0, double p2, float vx_hit, float vy_hit, float vz_hit){
-   // p0 and p2 are line 3D fitting parameters
-
-   TVector3 xv(vx_hit, vy_hit, vz_hit);
-   TVector3 x0(p0, p2, 0. );
-   TVector3 u = TrkDirVect.Unit();
-
-   double IP = ((xv-x0).Cross(u)).Mag();
-   return IP;
-
-};
-
+}
 
